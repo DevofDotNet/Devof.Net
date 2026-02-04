@@ -159,62 +159,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        
-        // Apply migrations
-        await context.Database.MigrateAsync();
-        
-        // Seed roles
-        var roles = new[] { "Admin", "Moderator", "Author", "User" };
-        foreach (var role in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new IdentityRole(role));
-            }
-        }
-        
-        // Seed admin user
-        var adminEmail = "admin@devof.net";
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
-        if (adminUser == null)
-        {
-            adminUser = new ApplicationUser
-            {
-                UserName = "admin",
-                Email = adminEmail,
-                DisplayName = "Administrator",
-                EmailConfirmed = true,
-                IsActive = true
-            };
-            var result = await userManager.CreateAsync(adminUser, "Admin@123");
-            if (result.Succeeded)
-            {
-                await userManager.AddToRolesAsync(adminUser, new[] { "Admin", "Author" });
-            }
-        }
-        
-        // Seed sample tags
-        if (!context.Tags.Any())
-        {
-            var tags = new[]
-            {
-                new Blog.Domain.Entities.Tag { Name = "C#", Slug = "csharp", Description = "The C# programming language", Color = "#68217A" },
-                new Blog.Domain.Entities.Tag { Name = ".NET", Slug = "dotnet", Description = "The .NET ecosystem", Color = "#512BD4" },
-                new Blog.Domain.Entities.Tag { Name = "ASP.NET Core", Slug = "aspnetcore", Description = "ASP.NET Core web framework", Color = "#1E90FF" },
-                new Blog.Domain.Entities.Tag { Name = "JavaScript", Slug = "javascript", Description = "JavaScript programming language", Color = "#F7DF1E" },
-                new Blog.Domain.Entities.Tag { Name = "TypeScript", Slug = "typescript", Description = "TypeScript programming language", Color = "#3178C6" },
-                new Blog.Domain.Entities.Tag { Name = "DevOps", Slug = "devops", Description = "DevOps practices and tools", Color = "#FF6B6B" },
-                new Blog.Domain.Entities.Tag { Name = "Database", Slug = "database", Description = "Database technologies", Color = "#336791" },
-                new Blog.Domain.Entities.Tag { Name = "Cloud", Slug = "cloud", Description = "Cloud computing", Color = "#FF9900" },
-                new Blog.Domain.Entities.Tag { Name = "Tutorial", Slug = "tutorial", Description = "Learning tutorials", Color = "#28A745" },
-                new Blog.Domain.Entities.Tag { Name = "Career", Slug = "career", Description = "Career advice and growth", Color = "#6C757D" }
-            };
-            context.Tags.AddRange(tags);
-            await context.SaveChangesAsync();
-        }
+        // Seed Database
+        await SeedData.InitializeAsync(services);
     }
     catch (Exception ex)
     {
