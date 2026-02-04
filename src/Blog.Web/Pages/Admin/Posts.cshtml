@@ -1,0 +1,177 @@
+@page
+@model Blog.Web.Pages.Admin.PostsModel
+@using Blog.Domain.Enums
+@{
+    ViewData["Title"] = "Manage Posts - Admin";
+}
+
+<div class="admin-layout">
+    <aside class="admin-sidebar card">
+        <partial name="_AdminSidebar" />
+    </aside>
+
+    <main class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">Posts</h1>
+            <span class="text-muted">Total: @Model.TotalPosts</span>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="d-flex gap-2 flex-wrap">
+                    <input type="text" asp-for="SearchTerm" class="form-control" placeholder="Search by title or author..." style="max-width: 300px;" />
+                    
+                    <select asp-for="StatusFilter" asp-items="Html.GetEnumSelectList<PostStatus>()" class="form-select" style="max-width: 200px;">
+                        <option value="">All Statuses</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.StatusFilter.HasValue)
+                    {
+                        <a href="/Admin/Posts" class="btn btn-outline-secondary">Clear</a>
+                    }
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model.Posts)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/post/@post.Slug" class="post-link" target="_blank">@post.Title</a>
+                                </td>
+                                <td>
+                                    <div class="user-cell">
+                                        <img src="@(post.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="user-avatar-sm" />
+                                        <span>@post.Author.DisplayName</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @switch (post.Status)
+                                    {
+                                        case PostStatus.Published:
+                                            <span class="badge badge-success">Published</span>
+                                            break;
+                                        case PostStatus.Draft:
+                                            <span class="badge badge-secondary">Draft</span>
+                                            break;
+                                        case PostStatus.Unpublished:
+                                            <span class="badge badge-danger">Unpublished</span>
+                                            break;
+                                        case PostStatus.Archived:
+                                            <span class="badge badge-warning">Archived</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@post.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="/post/@post.Slug" class="btn btn-sm btn-outline-primary" target="_blank" title="View Post">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        
+                                        @if (post.Status == PostStatus.Published)
+                                        {
+                                            <form method="post" asp-page-handler="Unpublish" asp-route-id="@post.Id" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Unpublish" onclick="return confirm('Are you sure you want to unpublish this post?');">
+                                                    <i class="fas fa-eye-slash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (post.Status == PostStatus.Unpublished || post.Status == PostStatus.Draft)
+                                        {
+                                            <form method="post" asp-page-handler="Publish" asp-route-id="@post.Id" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Publish" onclick="return confirm('Are you sure you want to publish this post?');">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <div>
+                     Showing @((Model.PageIndex - 1) * Model.PageSize + 1) to @(Math.Min(Model.PageIndex * Model.PageSize, Model.TotalPosts)) of @Model.TotalPosts
+                </div>
+                <div class="btn-group">
+                    <a href="@(Model.PageIndex > 1 ? $"/Admin/Posts?PageIndex={Model.PageIndex - 1}&SearchTerm={Model.SearchTerm}&StatusFilter={Model.StatusFilter}" : "#")" 
+                       class="btn btn-outline-secondary @(Model.PageIndex <= 1 ? "disabled" : "")">Previous</a>
+                    <a href="@(Model.PageIndex * Model.PageSize < Model.TotalPosts ? $"/Admin/Posts?PageIndex={Model.PageIndex + 1}&SearchTerm={Model.SearchTerm}&StatusFilter={Model.StatusFilter}" : "#")" 
+                       class="btn btn-outline-secondary @(Model.PageIndex * Model.PageSize >= Model.TotalPosts ? "disabled" : "")">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    /* Reusing styles from Admin/Index.cshtml via site.css or duplicated here for isolation. 
+       Ideally moved to site.css or _AdminLayout. For now, scoped style is fine or assuming global.
+       I'll include basic table styles here just in case they aren't fully global 
+       (Admin specific styles were in Index.cshtml) */
+       
+    .admin-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: var(--spacing-xl);
+        min-height: 70vh;
+    }
+    .admin-sidebar {
+        position: sticky;
+        top: 88px;
+        height: fit-content;
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .admin-table th {
+        font-weight: 500;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+    }
+</style>

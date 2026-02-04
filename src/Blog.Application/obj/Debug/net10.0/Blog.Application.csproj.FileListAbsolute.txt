@@ -1,0 +1,15 @@
+/home/avi/Desktop/DFevofNet/src/Blog.Application/bin/Debug/net10.0/Blog.Application.deps.json
+/home/avi/Desktop/DFevofNet/src/Blog.Application/bin/Debug/net10.0/Blog.Application.dll
+/home/avi/Desktop/DFevofNet/src/Blog.Application/bin/Debug/net10.0/Blog.Application.pdb
+/home/avi/Desktop/DFevofNet/src/Blog.Application/bin/Debug/net10.0/Blog.Domain.dll
+/home/avi/Desktop/DFevofNet/src/Blog.Application/bin/Debug/net10.0/Blog.Domain.pdb
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.csproj.AssemblyReference.cache
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.GeneratedMSBuildEditorConfig.editorconfig
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.AssemblyInfoInputs.cache
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.AssemblyInfo.cs
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.csproj.CoreCompileInputs.cache
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.App.C7D7B2EA.Up2Date
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.dll
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/refint/Blog.Application.dll
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/Blog.Application.pdb
+/home/avi/Desktop/DFevofNet/src/Blog.Application/obj/Debug/net10.0/ref/Blog.Application.dll

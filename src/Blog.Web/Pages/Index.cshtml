@@ -1,0 +1,208 @@
+﻿@page
+@using Blog.Application.DTOs
+@using Blog.Application.Services
+@model Blog.Web.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["MetaDescription"] = "Devof.NET - A community of developers sharing knowledge and building together.";
+}
+
+<div class="feed-layout">
+    <div class="feed-main">
+        <!-- Feed Tabs -->
+        <div class="feed-tabs">
+            <a href="/" class="feed-tab @(Model.Feed == "latest" ? "active" : "")">
+                <i class="fas fa-clock"></i> Latest
+            </a>
+            <a href="/?feed=trending" class="feed-tab @(Model.Feed == "trending" ? "active" : "")">
+                <i class="fas fa-fire"></i> Trending
+            </a>
+        </div>
+
+        <!-- Posts Grid -->
+        @if (Model.Posts.Items.Any())
+        {
+            <div class="posts-grid">
+                @foreach (var post in Model.Posts.Items)
+                {
+                    <article class="card post-card animate-slide-up">
+                        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                        {
+                            <img src="@post.CoverImageUrl" alt="@post.Title" class="post-card-cover" loading="lazy" />
+                        }
+                        <div class="post-card-content">
+                            <div class="post-card-author">
+                                <img src="@(post.Author.AvatarUrl ?? "/images/default-avatar.png")" 
+                                     alt="@post.Author.DisplayName" />
+                                <div class="post-card-author-info">
+                                    <a href="/Author/@post.Author.UserName" class="post-card-author-name">
+                                        @(post.Author.DisplayName ?? post.Author.UserName)
+                                    </a>
+                                    <span class="post-card-date">
+                                        @post.PublishedAt?.ToString("MMM dd, yyyy")
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <a href="/post/@post.Slug" class="post-card-title">
+                                @post.Title
+                            </a>
+                            
+                            <p class="post-card-excerpt">@post.Excerpt</p>
+                            
+                            <div class="post-card-tags">
+                                @foreach (var tag in post.Tags.Take(3))
+                                {
+                                    <a href="/Tag/@tag.Slug" class="tag" 
+                                       style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
+                                        #@tag.Name
+                                    </a>
+                                }
+                            </div>
+                            
+                            <div class="post-card-meta">
+                                <div class="post-card-stats">
+                                    <span class="post-stat">
+                                        <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                        @post.LikeCount
+                                    </span>
+                                    <span class="post-stat">
+                                        <i class="fas fa-comment"></i>
+                                        @post.CommentCount
+                                    </span>
+                                </div>
+                                <span class="post-reading-time">
+                                    @post.ReadingTimeMinutes min read
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.Posts.TotalPages > 1)
+            {
+                <nav class="pagination">
+                    @if (Model.Posts.HasPreviousPage)
+                    {
+                        <a href="/?page=@(Model.Posts.Page - 1)&feed=@Model.Feed" class="pagination-link">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    }
+                    
+                    @for (var i = 1; i <= Model.Posts.TotalPages && i <= 5; i++)
+                    {
+                        <a href="/?page=@i&feed=@Model.Feed" 
+                           class="pagination-link @(i == Model.Posts.Page ? "active" : "")">
+                            @i
+                        </a>
+                    }
+                    
+                    @if (Model.Posts.HasNextPage)
+                    {
+                        <a href="/?page=@(Model.Posts.Page + 1)&feed=@Model.Feed" class="pagination-link">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3 class="empty-state-title">No posts yet</h3>
+                <p class="empty-state-description">Be the first to share your knowledge with the community!</p>
+                <a href="/Post/Create" class="btn btn-primary">Create a Post</a>
+            </div>
+        }
+    </div>
+
+    <aside class="feed-sidebar">
+        <!-- Popular Tags -->
+        <div class="card sidebar-card">
+            <div class="card-body">
+                <h3 class="sidebar-title">Popular Tags</h3>
+                <div class="post-card-tags" style="flex-wrap: wrap;">
+                    @foreach (var tag in Model.PopularTags)
+                    {
+                        <a href="/Tag/@tag.Slug" class="tag"
+                           style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
+                            #@tag.Name
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Trending Posts -->
+        @if (Model.TrendingPosts.Any())
+        {
+            <div class="card sidebar-card">
+                <div class="card-body">
+                    <h3 class="sidebar-title">🔥 Trending This Week</h3>
+                    <div class="posts-list">
+                        @foreach (var post in Model.TrendingPosts.Take(5))
+                        {
+                            <div class="trending-item">
+                                <a href="/post/@post.Slug" class="trending-title">
+                                    @post.Title
+                                </a>
+                                <div class="trending-meta">
+                                    <span>@post.Author.DisplayName</span>
+                                    <span>·</span>
+                                    <span>@post.LikeCount likes</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Join CTA -->
+        @if (!User.Identity?.IsAuthenticated == true)
+        {
+            <div class="card sidebar-card" style="background: var(--gradient-primary); border: none;">
+                <div class="card-body" style="color: white;">
+                    <h3 style="margin-bottom: 0.5rem;">Join Our Community</h3>
+                    <p style="opacity: 0.9; font-size: 0.875rem; margin-bottom: 1rem;">
+                        Share your knowledge, learn from others, and grow together.
+                    </p>
+                    <a href="/Account/Register" class="btn" 
+                       style="background: white; color: var(--color-primary); width: 100%;">
+                        Create Account
+                    </a>
+                </div>
+            </div>
+        }
+    </aside>
+</div>
+
+<style>
+    .trending-item {
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .trending-item:last-child {
+        border-bottom: none;
+    }
+    .trending-title {
+        display: block;
+        font-weight: 500;
+        color: var(--color-text);
+        font-size: 0.9375rem;
+        line-height: 1.4;
+        margin-bottom: var(--spacing-xs);
+    }
+    .trending-title:hover {
+        color: var(--color-primary);
+    }
+    .trending-meta {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        display: flex;
+        gap: var(--spacing-xs);
+    }
+</style>

@@ -1,0 +1,264 @@
+@page
+@model Blog.Web.Pages.Post.CreateModel
+@{
+    ViewData["Title"] = "Create Post";
+}
+
+<div class="editor-container">
+    <form method="post" class="editor-form" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        
+        <div class="editor-header">
+            <h1>Create a new post</h1>
+            <div class="editor-actions">
+                <button type="submit" name="publish" value="false" class="btn btn-outline">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+                <button type="submit" name="publish" value="true" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Publish
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                @Model.ErrorMessage
+            </div>
+        }
+
+        <div class="editor-main card">
+            <div class="card-body">
+                <!-- Cover Image -->
+                <div class="cover-upload">
+                    <input type="file" name="coverImage" id="coverImage" accept="image/*" class="hidden" />
+                    <label for="coverImage" class="cover-upload-label">
+                        <i class="fas fa-image"></i>
+                        <span>Add a cover image</span>
+                    </label>
+                    <div id="coverPreview" class="cover-preview"></div>
+                </div>
+
+                <!-- Title -->
+                <div class="form-group">
+                    <input type="text" asp-for="Input.Title" class="editor-title-input" 
+                           placeholder="New post title here..." maxlength="200" required />
+                    <span asp-validation-for="Input.Title" class="form-error"></span>
+                </div>
+
+                <!-- Tags -->
+                <div class="form-group">
+                    <input type="text" asp-for="TagsInput" class="tags-input" 
+                           placeholder="Add up to 5 tags (comma separated)..." />
+                    <span class="form-help">Example: csharp, dotnet, tutorial</span>
+                </div>
+
+                <!-- Content Editor -->
+                <div class="form-group">
+                    <div class="editor-tabs">
+                        <button type="button" class="editor-tab active" data-tab="write">Write</button>
+                        <button type="button" class="editor-tab" data-tab="preview">Preview</button>
+                    </div>
+                    <div class="editor-content">
+                        <div id="write-panel" class="editor-panel active">
+                            <textarea asp-for="Input.Content" class="editor-textarea" 
+                                      placeholder="Write your post content here... (Markdown supported)" 
+                                      required></textarea>
+                        </div>
+                        <div id="preview-panel" class="editor-panel markdown-content">
+                            <p class="text-muted">Preview will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Settings -->
+        <details class="seo-settings card">
+            <summary class="card-header">
+                <i class="fas fa-search"></i> SEO Settings (optional)
+            </summary>
+            <div class="card-body">
+                <div class="form-group">
+                    <label asp-for="Input.MetaTitle" class="form-label">Meta Title</label>
+                    <input type="text" asp-for="Input.MetaTitle" class="form-input" maxlength="200" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.MetaDescription" class="form-label">Meta Description</label>
+                    <textarea asp-for="Input.MetaDescription" class="form-textarea" rows="2" maxlength="500"></textarea>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.MetaKeywords" class="form-label">Keywords</label>
+                    <input type="text" asp-for="Input.MetaKeywords" class="form-input" 
+                           placeholder="keyword1, keyword2, keyword3" maxlength="300" />
+                </div>
+            </div>
+        </details>
+    </form>
+</div>
+
+<style>
+    .editor-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+    }
+    .editor-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .editor-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+    .cover-upload {
+        margin-bottom: var(--spacing-lg);
+    }
+    .cover-upload .hidden {
+        display: none;
+    }
+    .cover-upload-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-lg);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    .cover-upload-label:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+    .cover-preview {
+        margin-top: var(--spacing-md);
+    }
+    .cover-preview img {
+        max-height: 200px;
+        border-radius: var(--radius-lg);
+    }
+    .editor-title-input {
+        width: 100%;
+        padding: var(--spacing-md) 0;
+        font-size: 2rem;
+        font-weight: 700;
+        border: none;
+        background: transparent;
+        color: var(--color-text);
+        outline: none;
+    }
+    .editor-title-input::placeholder {
+        color: var(--color-text-muted);
+    }
+    .tags-input {
+        width: 100%;
+        padding: var(--spacing-sm) 0;
+        font-size: 1rem;
+        border: none;
+        background: transparent;
+        color: var(--color-text);
+        outline: none;
+    }
+    .editor-tabs {
+        display: flex;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-sm);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-md);
+    }
+    .editor-tab {
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: none;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+        transition: all var(--transition-fast);
+    }
+    .editor-tab:hover {
+        color: var(--color-text);
+    }
+    .editor-tab.active {
+        background: var(--color-bg-elevated);
+        color: var(--color-primary);
+        box-shadow: var(--shadow-sm);
+    }
+    .editor-panel {
+        display: none;
+    }
+    .editor-panel.active {
+        display: block;
+    }
+    .editor-textarea {
+        width: 100%;
+        min-height: 400px;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        resize: vertical;
+        background: var(--color-bg);
+        color: var(--color-text);
+    }
+    .editor-textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+    }
+    .seo-settings {
+        margin-top: var(--spacing-lg);
+    }
+    .seo-settings summary {
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+</style>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    // Tab switching
+    document.querySelectorAll('.editor-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+            
+            this.classList.add('active');
+            const panel = document.getElementById(this.dataset.tab + '-panel');
+            panel.classList.add('active');
+            
+            if (this.dataset.tab === 'preview') {
+                const content = document.querySelector('.editor-textarea').value;
+                panel.innerHTML = marked.parse(content) || '<p class="text-muted">Preview will appear here...</p>';
+            }
+        });
+    });
+    
+    // Cover image preview
+    document.getElementById('coverImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('coverPreview').innerHTML = 
+                    `<img src="${e.target.result}" alt="Cover preview" />`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+}

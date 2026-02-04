@@ -1,0 +1,206 @@
+@page
+@model Blog.Web.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Manage Users - Admin";
+}
+
+<div class="admin-layout">
+    <aside class="admin-sidebar card">
+        <partial name="_AdminSidebar" />
+    </aside>
+
+    <main class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">Users</h1>
+            <span class="text-muted">Total: @Model.TotalUsers</span>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="d-flex gap-2">
+                    <input type="text" asp-for="SearchTerm" class="form-control" placeholder="Search by username or email..." />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                    {
+                        <a href="/Admin/Users" class="btn btn-outline-secondary">Clear</a>
+                    }
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="user-cell">
+                                        <img src="@(user.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="user-avatar-sm" />
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">@user.DisplayName</span>
+                                            <span class="text-muted small">@(@user.UserName)</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <!-- Role logic would require separate query or claim check, skipping for simplicity or assuming 'User' -->
+                                    <span class="badge badge-secondary">User</span>
+                                </td>
+                                <td>
+                                    @if (user.IsBanned)
+                                    {
+                                        <span class="badge badge-danger">Banned</span>
+                                    }
+                                    else if (!user.IsActive)
+                                    {
+                                        <span class="badge badge-warning">Inactive</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="/Author/@user.UserName" class="btn btn-sm btn-outline-primary" target="_blank" title="View Profile">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        
+                                        @if (user.UserName != User.Identity.Name)
+                                        {
+                                            @if (user.IsBanned || !user.IsActive)
+                                            {
+                                                <form method="post" asp-page-handler="Unban" asp-route-id="@user.Id" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Activate User" onclick="return confirm('Are you sure you want to activate this user?');">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-page-handler="Ban" asp-route-id="@user.Id" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Ban User" onclick="return confirm('Are you sure you want to ban this user?');">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination (Basic) -->
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <div>
+                    Showing @((Model.PageIndex - 1) * Model.PageSize + 1) to @(Math.Min(Model.PageIndex * Model.PageSize, Model.TotalUsers)) of @Model.TotalUsers
+                </div>
+                <div class="btn-group">
+                    <a href="@(Model.PageIndex > 1 ? $"/Admin/Users?PageIndex={Model.PageIndex - 1}&SearchTerm={Model.SearchTerm}" : "#")" 
+                       class="btn btn-outline-secondary @(Model.PageIndex <= 1 ? "disabled" : "")">Previous</a>
+                    <a href="@(Model.PageIndex * Model.PageSize < Model.TotalUsers ? $"/Admin/Users?PageIndex={Model.PageIndex + 1}&SearchTerm={Model.SearchTerm}" : "#")" 
+                       class="btn btn-outline-secondary @(Model.PageIndex * Model.PageSize >= Model.TotalUsers ? "disabled" : "")">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .admin-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: var(--spacing-xl);
+        min-height: 70vh;
+    }
+    .admin-sidebar {
+        position: sticky;
+        top: 88px;
+        height: fit-content;
+    }
+    .admin-nav {
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    .admin-nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        color: var(--color-text-secondary);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+        text-decoration: none;
+    }
+    .admin-nav-item:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text);
+    }
+    .admin-nav-item.active {
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+    }
+    .admin-nav-item i {
+        width: 20px;
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .admin-table th {
+        font-weight: 500;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+    }
+</style>

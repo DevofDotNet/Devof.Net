@@ -1,0 +1,20 @@
+<nav class="admin-nav">
+    <a href="/Admin" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Index" ? "active" : "")">
+        <i class="fas fa-chart-line"></i> Dashboard
+    </a>
+    <a href="/Admin/Users" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Users") == true ? "active" : "")">
+        <i class="fas fa-users"></i> Users
+    </a>
+    <a href="/Admin/Posts" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Posts") == true ? "active" : "")">
+        <i class="fas fa-newspaper"></i> Posts
+    </a>
+    <a href="/Admin/Comments" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Comments") == true ? "active" : "")">
+        <i class="fas fa-comments"></i> Comments
+    </a>
+    <a href="/Admin/Reports" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Reports") == true ? "active" : "")">
+        <i class="fas fa-flag"></i> Reports
+    </a>
+    <a href="/Admin/Tags" class="admin-nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Tags") == true ? "active" : "")">
+        <i class="fas fa-tags"></i> Tags
+    </a>
+</nav>

@@ -1,0 +1,131 @@
+@page
+@model Blog.Web.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="auth-container">
+    <div class="auth-card card">
+        <div class="card-body">
+            <div class="auth-header">
+                <h1 class="auth-title">Join Devof.NET</h1>
+                <p class="auth-subtitle">Create an account to start sharing your knowledge</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    @Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post" class="auth-form">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label asp-for="Input.UserName" class="form-label">Username</label>
+                    <input asp-for="Input.UserName" class="form-input" placeholder="johndoe" />
+                    <span asp-validation-for="Input.UserName" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Email" class="form-label">Email</label>
+                    <input asp-for="Input.Email" class="form-input" type="email" placeholder="you@example.com" />
+                    <span asp-validation-for="Input.Email" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Password" class="form-label">Password</label>
+                    <input asp-for="Input.Password" class="form-input" type="password" placeholder="••••••••" />
+                    <span class="form-help">At least 8 characters with uppercase, lowercase, and number</span>
+                    <span asp-validation-for="Input.Password" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.ConfirmPassword" class="form-label">Confirm Password</label>
+                    <input asp-for="Input.ConfirmPassword" class="form-input" type="password" placeholder="••••••••" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="form-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="auth-divider">
+                <span>or continue with</span>
+            </div>
+
+            <div class="social-auth">
+                <a href="/Account/ExternalLogin?provider=Google" class="btn btn-outline social-btn">
+                    <i class="fab fa-google"></i> Google
+                </a>
+                <a href="/Account/ExternalLogin?provider=GitHub" class="btn btn-outline social-btn">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+
+            <p class="auth-footer">
+                Already have an account? <a href="/Account/Login">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: var(--spacing-xl);
+    }
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+    }
+    .auth-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+    }
+    .auth-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+    .auth-subtitle {
+        color: var(--color-text-secondary);
+    }
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        margin: var(--spacing-xl) 0;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--color-border);
+    }
+    .auth-divider span {
+        padding: 0 var(--spacing-md);
+    }
+    .social-auth {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+    .social-btn {
+        padding: var(--spacing-md);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: var(--spacing-xl);
+        color: var(--color-text-secondary);
+        font-size: 0.875rem;
+    }
+</style>

@@ -1,0 +1,279 @@
+@page
+@model Blog.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="admin-layout">
+    <aside class="admin-sidebar card">
+        <partial name="_AdminSidebar" />
+    </aside>
+
+    <main class="admin-content">
+        <h1 class="page-title">Dashboard</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon" style="background: var(--color-primary-light); color: var(--color-primary);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">@Model.Stats.TotalUsers</span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">@Model.Stats.TotalPosts</span>
+                        <span class="stat-label">Published Posts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--color-secondary);">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">@Model.Stats.TotalComments</span>
+                        <span class="stat-label">Comments</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card card">
+                <div class="card-body">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">@Model.Stats.PendingReports</span>
+                        <span class="stat-label">Pending Reports</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-panels">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Users</h3>
+                    <a href="/Admin/Users" class="btn btn-sm btn-outline">View All</a>
+                </div>
+                <div class="card-body">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.RecentUsers)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <img src="@(user.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="user-avatar-sm" />
+                                            <span>@user.DisplayName</span>
+                                        </div>
+                                    </td>
+                                    <td>@user.Email</td>
+                                    <td>@user.JoinedAt.ToString("MMM dd")</td>
+                                    <td>
+                                        <span class="badge @(user.IsActive ? "badge-success" : "badge-danger")">
+                                            @(user.IsActive ? "Active" : "Suspended")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Posts</h3>
+                    <a href="/Admin/Posts" class="btn btn-sm btn-outline">View All</a>
+                </div>
+                <div class="card-body">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var post in Model.RecentPosts)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="/post/@post.Slug" class="post-link">@post.Title</a>
+                                    </td>
+                                    <td>@post.Author.DisplayName</td>
+                                    <td>
+                                        <span class="badge badge-success">Published</span>
+                                    </td>
+                                    <td>@post.PublishedAt?.ToString("MMM dd")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .admin-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: var(--spacing-xl);
+        min-height: 70vh;
+    }
+    .admin-sidebar {
+        position: sticky;
+        top: 88px;
+        height: fit-content;
+    }
+    .admin-nav {
+        padding: var(--spacing-md);
+    }
+    .admin-nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        color: var(--color-text-secondary);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+    .admin-nav-item:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text);
+    }
+    .admin-nav-item.active {
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+    }
+    .admin-nav-item i {
+        width: 20px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+    .stat-card .card-body {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        font-size: 1.25rem;
+    }
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .stat-info .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .stat-info .stat-label {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+    .admin-panels {
+        display: grid;
+        gap: var(--spacing-xl);
+    }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-header h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .admin-table th {
+        font-weight: 500;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+    }
+    .badge {
+        display: inline-block;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: var(--radius-full);
+    }
+    .badge-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--color-success);
+    }
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--color-danger);
+    }
+    .post-link {
+        color: var(--color-text);
+        font-weight: 500;
+    }
+    .post-link:hover {
+        color: var(--color-primary);
+    }
+    
+    @@media (max-width: 1024px) {
+        .admin-layout {
+            grid-template-columns: 1fr;
+        }
+        .admin-sidebar {
+            position: static;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>

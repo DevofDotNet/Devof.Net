@@ -1,0 +1,224 @@
+@page "{username}"
+@model Blog.Web.Pages.Author.ProfileModel
+@{
+    ViewData["Title"] = Model.Profile?.DisplayName ?? "Author Not Found";
+}
+
+@if (Model.Profile == null)
+{
+    <div class="empty-state">
+        <div class="empty-state-icon">👤</div>
+        <h3 class="empty-state-title">Author not found</h3>
+        <p class="empty-state-description">This author profile doesn't exist.</p>
+        <a href="/" class="btn btn-primary">Go Home</a>
+    </div>
+}
+else
+{
+    <div class="author-page">
+        <header class="author-header card">
+            <div class="card-body">
+                <div class="author-profile">
+                    <img src="@(Model.Profile.AvatarUrl ?? "/images/default-avatar.png")" 
+                         alt="@Model.Profile.DisplayName" class="author-avatar-lg" />
+                    <div class="author-info">
+                        <h1 class="author-name">@Model.Profile.DisplayName</h1>
+                        <p class="author-username">@@@Model.Profile.UserName</p>
+                        @if (!string.IsNullOrEmpty(Model.Profile.Bio))
+                        {
+                            <p class="author-bio">@Model.Profile.Bio</p>
+                        }
+                        <div class="author-social">
+                            @if (!string.IsNullOrEmpty(Model.Profile.WebsiteUrl))
+                            {
+                                <a href="@Model.Profile.WebsiteUrl" target="_blank" rel="noopener" class="social-link">
+                                    <i class="fas fa-globe"></i>
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
+                            {
+                                <a href="@Model.Profile.GitHubUrl" target="_blank" rel="noopener" class="social-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
+                            {
+                                <a href="@Model.Profile.TwitterUrl" target="_blank" rel="noopener" class="social-link">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
+                            {
+                                <a href="@Model.Profile.LinkedInUrl" target="_blank" rel="noopener" class="social-link">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                    <div class="author-actions">
+                        @if (User.Identity?.IsAuthenticated == true && User.Identity.Name != Model.Profile.UserName)
+                        {
+                            <form method="post" asp-page-handler="Follow">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn @(Model.Profile.IsFollowing ? "btn-outline" : "btn-primary")">
+                                    @(Model.Profile.IsFollowing ? "Following" : "Follow")
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+                <div class="author-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">@Model.Profile.PostCount</span>
+                        <span class="stat-label">Posts</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">@Model.Profile.FollowerCount</span>
+                        <span class="stat-label">Followers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">@Model.Profile.FollowingCount</span>
+                        <span class="stat-label">Following</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="author-posts">
+            <h2 class="section-title">Posts by @Model.Profile.DisplayName</h2>
+            @if (Model.Posts.Items.Any())
+            {
+                <div class="posts-grid">
+                    @foreach (var post in Model.Posts.Items)
+                    {
+                        <article class="card post-card">
+                            @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                            {
+                                <img src="@post.CoverImageUrl" alt="@post.Title" class="post-card-cover" loading="lazy" />
+                            }
+                            <div class="post-card-content">
+                                <a href="/post/@post.Slug" class="post-card-title">@post.Title</a>
+                                <p class="post-card-excerpt">@post.Excerpt</p>
+                                <div class="post-card-tags">
+                                    @foreach (var tag in post.Tags.Take(3))
+                                    {
+                                        <a href="/Tag/@tag.Slug" class="tag">
+                                            #@tag.Name
+                                        </a>
+                                    }
+                                </div>
+                                <div class="post-card-meta">
+                                    <span class="post-card-date">@post.PublishedAt?.ToString("MMM dd, yyyy")</span>
+                                    <div class="post-card-stats">
+                                        <span class="post-stat"><i class="fas fa-heart"></i> @post.LikeCount</span>
+                                        <span class="post-stat"><i class="fas fa-comment"></i> @post.CommentCount</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                @if (Model.Posts.TotalPages > 1)
+                {
+                    <nav class="pagination">
+                        @for (var i = 1; i <= Model.Posts.TotalPages; i++)
+                        {
+                            <a href="/Author/@Model.Profile.UserName?page=@i" 
+                               class="pagination-link @(i == Model.Posts.Page ? "active" : "")">@i</a>
+                        }
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>No posts yet.</p>
+                </div>
+            }
+        </section>
+    </div>
+}
+
+<style>
+    .author-page {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .author-header {
+        margin-bottom: var(--spacing-2xl);
+    }
+    .author-profile {
+        display: flex;
+        gap: var(--spacing-xl);
+        align-items: flex-start;
+        margin-bottom: var(--spacing-xl);
+    }
+    .author-avatar-lg {
+        width: 128px;
+        height: 128px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+    }
+    .author-info {
+        flex: 1;
+    }
+    .author-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+    .author-username {
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-sm);
+    }
+    .author-bio {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-md);
+        line-height: 1.6;
+    }
+    .author-social {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+    .social-link {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-bg);
+        border-radius: var(--radius-full);
+        color: var(--color-text-secondary);
+        transition: all var(--transition-fast);
+    }
+    .social-link:hover {
+        background: var(--color-primary);
+        color: white;
+    }
+    .author-stats {
+        display: flex;
+        gap: var(--spacing-2xl);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--color-border);
+    }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text);
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xl);
+    }
+</style>

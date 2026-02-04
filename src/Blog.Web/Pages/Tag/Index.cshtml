@@ -1,0 +1,82 @@
+@page
+@model Blog.Web.Pages.Tag.IndexModel
+@{
+    ViewData["Title"] = "Tags";
+}
+
+<div class="tags-page">
+    <header class="page-header">
+        <h1 class="page-title">Tags</h1>
+        <p class="page-subtitle">Browse posts by topic</p>
+    </header>
+
+    <div class="tags-grid">
+        @foreach (var tag in Model.Tags)
+        {
+            <a href="/Tag/@tag.Slug" class="tag-card card"
+               style="--tag-color: @(tag.Color ?? "var(--color-primary)");">
+                <div class="card-body">
+                    <div class="tag-icon">#</div>
+                    <h3 class="tag-name">@tag.Name</h3>
+                    @if (!string.IsNullOrEmpty(tag.Description))
+                    {
+                        <p class="tag-description">@tag.Description</p>
+                    }
+                    <span class="tag-count">@tag.PostCount posts</span>
+                </div>
+            </a>
+        }
+    </div>
+</div>
+
+<style>
+    .tags-page {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .tags-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--spacing-lg);
+    }
+    .tag-card {
+        position: relative;
+        overflow: hidden;
+        transition: all var(--transition-normal);
+    }
+    .tag-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--tag-color);
+    }
+    .tag-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .tag-icon {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--tag-color);
+        margin-bottom: var(--spacing-sm);
+    }
+    .tag-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text);
+        margin-bottom: var(--spacing-xs);
+    }
+    .tag-description {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-md);
+        line-height: 1.5;
+    }
+    .tag-count {
+        font-size: 0.8125rem;
+        color: var(--color-text-muted);
+    }
+</style>

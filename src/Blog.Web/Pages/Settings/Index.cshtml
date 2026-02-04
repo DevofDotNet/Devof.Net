@@ -1,0 +1,121 @@
+@page
+@model Blog.Web.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4">Settings</h1>
+            
+            @if (!string.IsNullOrEmpty(Model.StatusMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @Model.StatusMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muted" href="#" title="Coming soon">Account</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <h4 class="mb-3">Public Profile</h4>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.DisplayName" class="form-label"></label>
+                            <input asp-for="Input.DisplayName" class="form-control" />
+                            <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
+                            <div class="form-text">Your name as it appears on your profile and posts.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.AvatarUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-image"></i></span>
+                                <input asp-for="Input.AvatarUrl" class="form-control" placeholder="https://..." />
+                            </div>
+                            <span asp-validation-for="Input.AvatarUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Bio" class="form-label"></label>
+                            <textarea asp-for="Input.Bio" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Input.Bio" class="text-danger"></span>
+                            <div class="form-text">Tell us a little bit about yourself.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Location" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                <input asp-for="Input.Location" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Input.Location" class="text-danger"></span>
+                        </div>
+                        
+                        <hr class="my-4" />
+                        
+                        <h4 class="mb-3">Social Links</h4>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.WebsiteUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                <input asp-for="Input.WebsiteUrl" class="form-control" placeholder="https://yoursite.com" />
+                            </div>
+                            <span asp-validation-for="Input.WebsiteUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.GitHubUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-github"></i></span>
+                                <input asp-for="Input.GitHubUrl" class="form-control" placeholder="https://github.com/username" />
+                            </div>
+                            <span asp-validation-for="Input.GitHubUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.TwitterUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-twitter"></i></span>
+                                <input asp-for="Input.TwitterUrl" class="form-control" placeholder="https://twitter.com/username" />
+                            </div>
+                            <span asp-validation-for="Input.TwitterUrl" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.LinkedInUrl" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-linkedin"></i></span>
+                                <input asp-for="Input.LinkedInUrl" class="form-control" placeholder="https://linkedin.com/in/username" />
+                            </div>
+                            <span asp-validation-for="Input.LinkedInUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" class="btn btn-primary px-4">Save Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
