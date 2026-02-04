@@ -13,11 +13,13 @@ public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IWebHostEnvironment _environment;
 
-    public IndexModel(UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork)
+    public IndexModel(UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IWebHostEnvironment environment)
     {
         _userManager = userManager;
         _unitOfWork = unitOfWork;
+        _environment = environment;
     }
 
     [BindProperty]
@@ -56,10 +58,13 @@ public class IndexModel : PageModel
         [Display(Name = "LinkedIn Profile")]
         [Url(ErrorMessage = "Please enter a valid URL")]
         public string? LinkedInUrl { get; set; }
-        
+
         [Display(Name = "Profile Image URL")]
         [Url(ErrorMessage = "Please enter a valid URL")]
         public string? AvatarUrl { get; set; }
+
+        [Display(Name = "Upload Profile Image")]
+        public IFormFile? AvatarFile { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -98,6 +103,33 @@ public class IndexModel : PageModel
             return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
         }
 
+        // Handle file upload if provided
+        if (Input.AvatarFile != null)
+        {
+            // Validate file
+            var validation = ValidateImageFile(Input.AvatarFile);
+            if (!validation.IsValid)
+            {
+                ModelState.AddModelError(string.Empty, validation.ErrorMessage!);
+                return Page();
+            }
+
+            // Delete old avatar if it's an uploaded file (not a URL)
+            if (!string.IsNullOrEmpty(user.AvatarUrl) && user.AvatarUrl.StartsWith("/uploads/"))
+            {
+                DeleteOldAvatar(user.AvatarUrl);
+            }
+
+            // Save new avatar
+            var avatarPath = await SaveUploadedAvatar(Input.AvatarFile, user.Id);
+            user.AvatarUrl = avatarPath;
+        }
+        else if (!string.IsNullOrEmpty(Input.AvatarUrl))
+        {
+            // Use URL if no file uploaded
+            user.AvatarUrl = Input.AvatarUrl;
+        }
+
         // Update fields
         user.DisplayName = Input.DisplayName;
         user.Bio = Input.Bio;
@@ -106,16 +138,11 @@ public class IndexModel : PageModel
         user.GitHubUrl = Input.GitHubUrl;
         user.TwitterUrl = Input.TwitterUrl;
         user.LinkedInUrl = Input.LinkedInUrl;
-        user.AvatarUrl = Input.AvatarUrl;
-        
+
         user.UpdatedAt = DateTime.UtcNow;
 
-        // Using UserManager to update is safer for IdentityUser, but UnitOfWork is also fine if tracking.
-        // Since we injected UserManager, let's use it or UpdateAsync.
-        // However, we are modifying custom properties.
-        
         var result = await _userManager.UpdateAsync(user);
-        
+
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
@@ -127,5 +154,72 @@ public class IndexModel : PageModel
 
         StatusMessage = "Your profile has been updated";
         return RedirectToPage();
+    }
+
+    private (bool IsValid, string? ErrorMessage) ValidateImageFile(IFormFile file)
+    {
+        // Check file size (5MB max)
+        const long maxFileSize = 5 * 1024 * 1024;
+        if (file.Length > maxFileSize)
+        {
+            return (false, "File size must be less than 5MB");
+        }
+
+        // Check file type
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            return (false, "Only JPG, PNG, and GIF images are allowed");
+        }
+
+        // Check MIME type
+        var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+        if (!allowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+        {
+            return (false, "Invalid image format");
+        }
+
+        return (true, null);
+    }
+
+    private async Task<string> SaveUploadedAvatar(IFormFile file, string userId)
+    {
+        // Generate unique filename
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var fileName = $"{userId}_{DateTime.UtcNow.Ticks}{extension}";
+
+        // Ensure uploads directory exists
+        var uploadsDir = Path.Combine(_environment.WebRootPath, "uploads", "avatars");
+        Directory.CreateDirectory(uploadsDir);
+
+        // Save file
+        var filePath = Path.Combine(uploadsDir, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        // Return relative path for web
+        return $"/uploads/avatars/{fileName}";
+    }
+
+    private void DeleteOldAvatar(string avatarUrl)
+    {
+        try
+        {
+            var fileName = Path.GetFileName(avatarUrl);
+            var filePath = Path.Combine(_environment.WebRootPath, "uploads", "avatars", fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+        }
+        catch
+        {
+            // Silently fail - old file cleanup is not critical
+        }
     }
 }

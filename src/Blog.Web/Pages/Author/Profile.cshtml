@@ -1,4 +1,4 @@
-@page "{username}"
+@page "/Author/{username}"
 @model Blog.Web.Pages.Author.ProfileModel
 @{
     ViewData["Title"] = Model.Profile?.DisplayName ?? "Author Not Found";

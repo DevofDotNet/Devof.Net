@@ -1,0 +1,129 @@
+@page
+@model Blog.Web.Pages.Account.BookmarksModel
+@{
+    ViewData["Title"] = "My Bookmarks";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="page-title">
+                <i class="fas fa-bookmark text-primary me-2"></i>My Bookmarks
+            </h1>
+            <p class="text-muted">Posts you've saved for later reading</p>
+        </div>
+    </div>
+
+    @if (Model.Posts.Items.Any())
+    {
+            <div class="posts-grid">
+            @foreach (var post in Model.Posts.Items)
+            {
+                        <article class="card post-card animate-slide-up">
+                    @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                    {
+                                    <img src="@post.CoverImageUrl" alt="@post.Title" class="post-card-cover" loading="lazy" />
+                    }
+                            <div class="post-card-content">
+                                <div class="post-card-author">
+                                    <img src="@(post.Author.AvatarUrl ?? "/images/default-avatar.png")" 
+                                         alt="@post.Author.DisplayName" />
+                                    <div class="post-card-author-info">
+                                        <a href="/Author/@post.Author.UserName" class="post-card-author-name">
+                                    @(post.Author.DisplayName ?? post.Author.UserName)
+                                        </a>
+                                        <span class="post-card-date">
+                                    @post.PublishedAt?.ToString("MMM dd, yyyy")
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <a href="/post/@post.Slug" class="post-card-title">
+                            @post.Title
+                                </a>
+
+                                <p class="post-card-excerpt">@post.Excerpt</p>
+
+                                <div class="post-card-tags">
+                            @foreach (var tag in post.Tags.Take(3))
+                            {
+                                            <a href="/Tag/@tag.Slug" class="tag" 
+                                               style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
+                                                #@tag.Name
+                                            </a>
+                            }
+                                </div>
+
+                                <div class="post-card-meta">
+                                    <div class="post-card-stats">
+                                        <span class="post-stat">
+                                            <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                    @post.LikeCount
+                                        </span>
+                                        <span class="post-stat">
+                                            <i class="fas fa-comment"></i>
+                                    @post.CommentCount
+                                        </span>
+                                    </div>
+                                    <span class="post-reading-time">
+                                @post.ReadingTimeMinutes min read
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+            }
+            </div>
+
+            <!-- Pagination -->
+        @if (Model.Posts.TotalPages > 1)
+        {
+                    <nav class="pagination mt-5">
+                @if (Model.Posts.HasPreviousPage)
+                {
+                                <a href="/Account/Bookmarks?page=@(Model.Posts.Page - 1)" class="pagination-link">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                }
+
+                @for (var i = 1; i <= Model.Posts.TotalPages && i <= 5; i++)
+                {
+                                <a href="/Account/Bookmarks?page=@i" 
+                                   class="pagination-link @(i == Model.Posts.Page ? "active" : "")">
+                        @i
+                                </a>
+                }
+
+                @if (Model.Posts.HasNextPage)
+                {
+                                <a href="/Account/Bookmarks?page=@(Model.Posts.Page + 1)" class="pagination-link">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                }
+                    </nav>
+        }
+    }
+    else
+    {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="far fa-bookmark"></i>
+                </div>
+                <h3 class="empty-state-title">No bookmarks yet</h3>
+                <p class="empty-state-description">
+                    When you find a post you want to read later, click the bookmark icon to save it here.
+                </p>
+                <a href="/" class="btn btn-primary mt-3">Explore Posts</a>
+            </div>
+    }
+</div>
+
+<style>
+    .page-title i {
+        color: var(--color-primary);
+    }
+    .empty-state-icon {
+        font-size: 3rem;
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-md);
+    }
+</style>

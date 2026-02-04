@@ -1,0 +1,79 @@
+@page
+@model Blog.Web.Pages.AboutModel
+@{
+    ViewData["Title"] = "About Us";
+}
+
+<div class="static-page">
+    <div class="page-header">
+        <h1 class="page-title">About Devof.NET</h1>
+        <p class="page-subtitle">A community-driven platform for developers</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="font-size: 1.0625rem; line-height: 1.8;">
+            <h2 style="margin-top: 0;">Our Mission</h2>
+            <p>
+                Devof.NET is a community-driven blogging platform built for developers, by developers. 
+                Our mission is to create a space where developers can share knowledge, learn from each other, 
+                and grow together.
+            </p>
+
+            <h2>What We Offer</h2>
+            <ul style="margin-left: var(--spacing-xl);">
+                <li>📝 <strong>Rich Content Creation</strong> - Write and publish articles with Markdown support</li>
+                <li>💬 <strong>Community Engagement</strong> - Comment, like, and bookmark posts</li>
+                <li>🏷️ <strong>Organized Content</strong> - Discover posts through tags and trending topics</li>
+                <li>👥 <strong>Author Profiles</strong> - Follow your favorite authors and build your network</li>
+                <li>🔍 <strong>Powerful Search</strong> - Find exactly what you're looking for</li>
+            </ul>
+
+            <h2>Built With Modern Technology</h2>
+            <p>
+                Devof.NET is built using:
+            </p>
+            <ul style="margin-left: var(--spacing-xl);">
+                <li><strong>ASP.NET Core</strong> - Fast, secure, and cross-platform</li>
+                <li><strong>Clean Architecture</strong> - Maintainable and testable codebase</li>
+                <li><strong>MySQL</strong> - Reliable and scalable database</li>
+                <li><strong>Modern UI</strong> - Beautiful design with dark mode support</li>
+            </ul>
+
+            <h2>Join Our Community</h2>
+            <p>
+                Whether you're a beginner learning to code or an experienced developer sharing insights, 
+                you're welcome here. Create an account and start contributing to the community today!
+            </p>
+
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <div style="margin-top: var(--spacing-xl);">
+                    <a href="/Account/Register" class="btn btn-primary btn-lg">Get Started</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .static-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .static-page h2 {
+        margin-top: var(--spacing-xl);
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text);
+    }
+    .static-page p {
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text-secondary);
+    }
+    .static-page ul {
+        margin-bottom: var(--spacing-md);
+    }
+    .static-page li {
+        margin-bottom: var(--spacing-sm);
+        color: var(--color-text-secondary);
+    }
+</style>

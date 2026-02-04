@@ -54,6 +54,7 @@ public class LocalImageService : IImageService
 
     public string GetImageUrl(string fileName)
     {
-        return $"{_baseUrl}/uploads/{fileName}";
+        // Use relative URL path to work regardless of domain/port
+        return $"/uploads/{fileName}";
     }
 }

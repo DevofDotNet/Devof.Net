@@ -1,4 +1,4 @@
-@page "{slug}"
+@page "/post/{slug}"
 @model Blog.Web.Pages.Post.DetailsModel
 @{
     ViewData["Title"] = Model.Post?.Title ?? "Post Not Found";

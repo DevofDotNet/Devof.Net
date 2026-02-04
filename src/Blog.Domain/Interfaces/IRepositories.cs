@@ -62,6 +62,7 @@ public interface IBookmarkRepository
     Task<bool> ExistsAsync(string userId, int postId, CancellationToken cancellationToken = default);
     Task<Bookmark> AddAsync(Bookmark bookmark, CancellationToken cancellationToken = default);
     Task RemoveAsync(string userId, int postId, CancellationToken cancellationToken = default);
+    Task<int> GetCountByUserIdAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 public interface IFollowRepository
@@ -105,7 +106,7 @@ public interface IUnitOfWork
     IFollowRepository Followers { get; } // Alias for Follows
     IReportRepository Reports { get; }
     IUserRepository Users { get; }
-    
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitAsync(CancellationToken cancellationToken = default);

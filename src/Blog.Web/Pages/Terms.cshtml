@@ -1,0 +1,105 @@
+@page
+@model Blog.Web.Pages.TermsModel
+@{
+    ViewData["Title"] = "Terms of Service";
+}
+
+<div class="static-page">
+    <div class="page-header">
+        <h1 class="page-title">Terms of Service</h1>
+        <p class="page-subtitle">Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body legal-content">
+            <h2>1. Acceptance of Terms</h2>
+            <p>
+                By accessing and using Devof.NET ("the Service"), you accept and agree to be bound by the terms 
+                and provision of this agreement.
+            </p>
+
+            <h2>2. Use License</h2>
+            <p>
+                Permission is granted to access and use the Service for personal, non-commercial purposes subject to these Terms of Service.
+            </p>
+            <ul>
+                <li>You must not modify or copy the materials</li>
+                <li>You must not use the materials for any commercial purpose or for any public display</li>
+                <li>You must not attempt to reverse engineer any software contained on the Service</li>
+                <li>You must not remove any copyright or other proprietary notations from the materials</li>
+            </ul>
+
+            <h2>3. User Content</h2>
+            <p>
+                Users may post, link, store, share and otherwise make available certain information, text, graphics, 
+                or other material ("Content"). You are responsible for the Content that you post to the Service.
+            </p>
+
+            <h2>4. Prohibited Uses</h2>
+            <p>You may not use the Service:</p>
+            <ul>
+                <li>In any way that violates any applicable national or international law or regulation</li>
+                <li>To transmit any advertising or promotional material without our prior written consent</li>
+                <li>To impersonate or attempt to impersonate the Company or another user</li>
+                <li>To engage in any conduct that restricts or inhibits anyone's use or enjoyment of the Service</li>
+                <li>To post spam, unsolicited messages, or inappropriate content</li>
+            </ul>
+
+            <h2>5. Intellectual Property</h2>
+            <p>
+                The Service and its original content (excluding Content provided by users), features and functionality 
+                are and will remain the exclusive property of Devof.NET and its licensors.
+            </p>
+
+            <h2>6. Termination</h2>
+            <p>
+                We may terminate or suspend your account and bar access to the Service immediately, without prior notice 
+                or liability, under our sole discretion, for any reason whatsoever and without limitation.
+            </p>
+
+            <h2>7. Limitation of Liability</h2>
+            <p>
+                In no event shall Devof.NET, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+                be liable for any indirect, incidental, special, consequential or punitive damages.
+            </p>
+
+            <h2>8. Changes to Terms</h2>
+            <p>
+                We reserve the right to modify or replace these Terms at any time. We will provide notice of any changes 
+                by posting the new Terms on this page.
+            </p>
+
+            <h2>9. Contact Us</h2>
+            <p>
+                If you have any questions about these Terms, please <a href="/Contact">contact us</a>.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .static-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .legal-content h2 {
+        margin-top: var(--spacing-xl);
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text);
+        font-size: 1.25rem;
+    }
+    .legal-content p {
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text-secondary);
+        line-height: 1.8;
+    }
+    .legal-content ul {
+        margin-bottom: var(--spacing-md);
+        margin-left: var(--spacing-xl);
+    }
+    .legal-content li {
+        margin-bottom: var(--spacing-sm);
+        color: var(--color-text-secondary);
+        line-height: 1.8;
+    }
+</style>

@@ -1,0 +1,28 @@
+@page
+@model Blog.Web.Pages.Account.ExternalLoginModel
+@{
+    ViewData["Title"] = "External Login";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>External Login</h1>
+            <p>Associate your @Model.ProviderDisplayName account.</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                @Model.ErrorMessage
+            </div>
+        }
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <p class="text-muted">
+            Please wait while we complete your login with @Model.ProviderDisplayName...
+        </p>
+    </div>
+</div>

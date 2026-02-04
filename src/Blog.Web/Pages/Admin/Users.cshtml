@@ -95,7 +95,7 @@
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
                                         
-                                        @if (user.UserName != User.Identity.Name)
+                                        @if (user.UserName != User.Identity?.Name)
                                         {
                                             @if (user.IsBanned || !user.IsActive)
                                             {

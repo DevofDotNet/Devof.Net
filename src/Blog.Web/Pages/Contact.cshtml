@@ -1,0 +1,102 @@
+@page
+@model Blog.Web.Pages.ContactModel
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="static-page">
+    <div class="page-header">
+        <h1 class="page-title">Contact Us</h1>
+        <p class="page-subtitle">Get in touch with the Devof.NET team</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> @TempData["Success"]
+                    </div>
+            }
+
+            <form method="post" class="contact-form">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" id="name" name="Input.Name" class="form-input" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="Input.Email" class="form-input" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input type="text" id="subject" name="Input.Subject" class="form-input" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea id="message" name="Input.Message" class="form-textarea" rows="6" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+            </form>
+
+            <div style="margin-top: var(--spacing-2xl); padding-top: var(--spacing-2xl); border-top: 1px solid var(--color-border);">
+                <h3 style="margin-bottom: var(--spacing-md);">Other Ways to Reach Us</h3>
+                <div class="contact-methods">
+                    <div class="contact-method">
+                        <i class="fas fa-envelope"></i>
+                        <span>support@devof.net</span>
+                    </div>
+                    <div class="contact-method">
+                        <i class="fab fa-github"></i>
+                        <span>github.com/devofnet</span>
+                    </div>
+                    <div class="contact-method">
+                        <i class="fab fa-twitter"></i>
+                        <span>@@devofnet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .static-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .contact-form {
+        max-width: 600px;
+    }
+    .contact-methods {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    .contact-method {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        color: var(--color-text-secondary);
+    }
+    .contact-method i {
+        width: 24px;
+        color: var(--color-primary);
+    }
+    .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-lg);
+    }
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--color-success);
+        border: 1px solid var(--color-success);
+    }
+</style>

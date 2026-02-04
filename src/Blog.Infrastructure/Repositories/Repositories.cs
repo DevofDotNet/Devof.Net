@@ -51,7 +51,7 @@ public class PostRepository : IPostRepository
     public async Task<IEnumerable<Post>> GetByAuthorIdAsync(string authorId, int page, int pageSize, PostStatus? status = null, CancellationToken cancellationToken = default)
     {
         var baseQuery = _context.Posts.Where(p => p.AuthorId == authorId);
-        
+
         if (status.HasValue)
         {
             baseQuery = baseQuery.Where(p => p.Status == status.Value);
@@ -69,7 +69,7 @@ public class PostRepository : IPostRepository
     public async Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default)
     {
         var query = _context.Posts.Where(p => p.AuthorId == authorId);
-         if (status.HasValue)
+        if (status.HasValue)
         {
             query = query.Where(p => p.Status == status.Value);
         }
@@ -105,8 +105,8 @@ public class PostRepository : IPostRepository
     {
         var searchQuery = $"%{query}%";
         return await _context.Posts
-            .Where(p => p.Status == PostStatus.Published && 
-                       (EF.Functions.Like(p.Title, searchQuery) || 
+            .Where(p => p.Status == PostStatus.Published &&
+                       (EF.Functions.Like(p.Title, searchQuery) ||
                         EF.Functions.Like(p.Content, searchQuery)))
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
@@ -400,6 +400,11 @@ public class BookmarkRepository : IBookmarkRepository
         {
             _context.Bookmarks.Remove(bookmark);
         }
+    }
+
+    public async Task<int> GetCountByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Bookmarks.CountAsync(b => b.UserId == userId, cancellationToken);
     }
 }
 
