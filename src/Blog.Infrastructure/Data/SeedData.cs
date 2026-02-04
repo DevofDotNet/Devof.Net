@@ -17,7 +17,14 @@ public static class SeedData
         var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("SeedData");
 
         // Apply migrations
-        await context.Database.MigrateAsync();
+        try
+        {
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Migration failed. Continuing with seeding (assuming database exists).");
+        }
 
         // 1. Seed Roles
         await SeedRolesAsync(roleManager);
@@ -29,11 +36,8 @@ public static class SeedData
         var tags = await SeedTagsAsync(context);
 
         // 4. Seed Posts
-        if (!context.Posts.Any())
-        {
-            await SeedPostsAsync(context, users, tags);
-            logger.LogInformation("Seeded Posts, Comments, and Likes.");
-        }
+        await SeedPostsAsync(context, users, tags);
+        logger.LogInformation("Seeding check completed.");
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -73,6 +77,9 @@ public static class SeedData
             var foundAdmin = await userManager.FindByEmailAsync(admin.Email);
             if (foundAdmin != null)
             {
+                // Ensure password is correct
+                var token = await userManager.GeneratePasswordResetTokenAsync(foundAdmin);
+                await userManager.ResetPasswordAsync(foundAdmin, token, "Admin@123");
                 users.Add(foundAdmin);
             }
 
@@ -166,6 +173,9 @@ public static class SeedData
 
         foreach (var (title, desc) in sampleTitles)
         {
+            // Skip if post with same title already exists
+            if (await context.Posts.AnyAsync(p => p.Title == title)) continue;
+
             var author = users[random.Next(users.Count)];
             var createdDate = DateTime.UtcNow.AddDays(-random.Next(1, 100));
             
@@ -188,7 +198,7 @@ public static class SeedData
             for (int i = 0; i < tagCount; i++)
             {
                 var tag = tags[random.Next(tags.Count)];
-                if (!post.PostTags.Any(pt => pt.TagId == tag.Id))
+                if (!post.PostTags.Any(pt => pt.Tag!.Id == tag.Id))
                 {
                     post.PostTags.Add(new PostTag { Tag = tag });
                 }
