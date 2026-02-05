@@ -1,5 +1,6 @@
 using Blog.Domain.Entities;
 using Blog.Domain.Enums;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,27 +68,28 @@ public static class SeedData
             Bio = "System Administrator and Site Manager.",
             CreatedAt = DateTime.UtcNow.AddYears(-1)
         };
-        
+
         if (await userManager.FindByEmailAsync(admin.Email) == null)
         {
             await userManager.CreateAsync(admin, "Admin@123");
             await userManager.AddToRolesAsync(admin, new[] { "Admin", "Author" });
             users.Add(admin);
         }
-            var foundAdmin = await userManager.FindByEmailAsync(admin.Email);
-            if (foundAdmin != null)
-            {
-                // Ensure password is correct
-                var token = await userManager.GeneratePasswordResetTokenAsync(foundAdmin);
-                await userManager.ResetPasswordAsync(foundAdmin, token, "Admin@123");
-                users.Add(foundAdmin);
-            }
+        var foundAdmin = await userManager.FindByEmailAsync(admin.Email);
+        if (foundAdmin != null)
+        {
+            // Ensure password is correct
+            var token = await userManager.GeneratePasswordResetTokenAsync(foundAdmin);
+            await userManager.ResetPasswordAsync(foundAdmin, token, "Admin@123");
+            users.Add(foundAdmin);
+        }
 
 
         // Custom Authors
         var authors = new[]
         {
-            new { Name = "Avnish", Email = "avnish@devof.net", Bio = "Full-stack developer passionate about .NET and Cloud Architecture." },
+            new { Name = "Avnish", Email = "avnish@devof.net",
+                Bio = "Full-stack developer passionate about .NET and Cloud Architecture." },
             new { Name = "Vikas", Email = "vikas@devof.net", Bio = "Frontend wizard and UI/UX enthusiast. Loves React and clean design." },
             new { Name = "Pooja", Email = "pooja@devof.net", Bio = "Data scientist / Backend engineer. Python & C# expert." }
         };
@@ -141,7 +143,7 @@ public static class SeedData
             new Tag { Name = "Tutorial", Slug = "tutorial", Description = "Learning tutorials", Color = "#28A745" },
             new Tag { Name = "Career", Slug = "career", Description = "Career advice and growth", Color = "#6C757D" }
         };
-        
+
         context.Tags.AddRange(tags);
         await context.SaveChangesAsync();
         return tags.ToList();
@@ -178,7 +180,7 @@ public static class SeedData
 
             var author = users[random.Next(users.Count)];
             var createdDate = DateTime.UtcNow.AddDays(-random.Next(1, 100));
-            
+
             var post = new Post
             {
                 Title = title,
