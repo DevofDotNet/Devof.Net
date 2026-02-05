@@ -83,6 +83,11 @@ builder.Services.AddScoped<IEngagementService, EngagementService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddSingleton<IMarkdownService, MarkdownService>();
 
+// New Services
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IDataExportService, DataExportService>();
+
 // Image Service
 var uploadPath = Path.Combine(builder.Environment.WebRootPath ?? "wwwroot", "uploads");
 var siteUrl = builder.Configuration["AppSettings:SiteUrl"] ?? "https://localhost:5001";

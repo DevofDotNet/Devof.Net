@@ -22,3 +22,21 @@ public enum ReportType
     Comment = 1,
     User = 2
 }
+
+public enum NotificationType
+{
+    Mention = 0,
+    Reply = 1,
+    Follow = 2,
+    Like = 3,
+    Comment = 4,
+    System = 5
+}
+
+public enum ConsentType
+{
+    Essential = 0,
+    Analytics = 1,
+    Marketing = 2
+}
+

@@ -164,6 +164,18 @@ img {
     font-size: 1.75rem;
 }
 
+.brand-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
 .brand-accent {
     background: var(--gradient-primary);
     -webkit-background-clip: text;

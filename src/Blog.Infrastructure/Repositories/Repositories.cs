@@ -557,3 +557,250 @@ public class UserRepository : IUserRepository
         return await _context.Users.CountAsync(cancellationToken);
     }
 }
+
+public class PostViewRepository : IPostViewRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public PostViewRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<PostView> AddAsync(PostView postView, CancellationToken cancellationToken = default)
+    {
+        await _context.PostViews.AddAsync(postView, cancellationToken);
+        return postView;
+    }
+
+    public async Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default)
+    {
+        return await _context.PostViews.CountAsync(pv => pv.PostId == postId, cancellationToken);
+    }
+
+    public async Task<int> GetUniqueViewCountByPostIdAsync(int postId, CancellationToken cancellationToken = default)
+    {
+        // Count unique viewers (both authenticated and by IP for anonymous)
+        var authenticatedViews = await _context.PostViews
+            .Where(pv => pv.PostId == postId && pv.ViewerId != null)
+            .Select(pv => pv.ViewerId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+
+        var anonymousViews = await _context.PostViews
+            .Where(pv => pv.PostId == postId && pv.ViewerId == null)
+            .Select(pv => pv.IpAddress)
+            .Distinct()
+            .CountAsync(cancellationToken);
+
+        return authenticatedViews + anonymousViews;
+    }
+
+    public async Task<IEnumerable<PostView>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await _context.PostViews
+            .Where(pv => pv.PostId == postId)
+            .Include(pv => pv.Viewer)
+            .Include(pv => pv.Post)
+            .OrderByDescending(pv => pv.ViewedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<PostView>> GetByUserIdAsync(string userId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await _context.PostViews
+            .Where(pv => pv.ViewerId == userId)
+            .Include(pv => pv.Post).ThenInclude(p => p.Author)
+            .OrderByDescending(pv => pv.ViewedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> HasViewedAsync(int postId, string? userId, string ipAddress, CancellationToken cancellationToken = default)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            return await _context.PostViews.AnyAsync(pv => pv.PostId == postId && pv.ViewerId == userId, cancellationToken);
+        }
+
+        return await _context.PostViews.AnyAsync(pv => pv.PostId == postId && pv.IpAddress == ipAddress, cancellationToken);
+    }
+}
+
+public class NotificationRepository : INotificationRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public NotificationRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Notification?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Notifications
+            .Include(n => n.User)
+            .Include(n => n.RelatedPost)
+            .Include(n => n.RelatedComment)
+            .Include(n => n.RelatedUser)
+            .FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Notification>> GetByUserIdAsync(string userId, bool unreadOnly, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Notifications.Where(n => n.UserId == userId);
+
+        if (unreadOnly)
+        {
+            query = query.Where(n => !n.IsRead);
+        }
+
+        return await query
+            .Include(n => n.RelatedPost)
+            .Include(n => n.RelatedComment)
+            .Include(n => n.RelatedUser)
+            .OrderByDescending(n => n.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetUnreadCountAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Notifications.CountAsync(n => n.UserId == userId && !n.IsRead, cancellationToken);
+    }
+
+    public async Task<Notification> AddAsync(Notification notification, CancellationToken cancellationToken = default)
+    {
+        await _context.Notifications.AddAsync(notification, cancellationToken);
+        return notification;
+    }
+
+    public async Task MarkAsReadAsync(int notificationId, CancellationToken cancellationToken = default)
+    {
+        var notification = await _context.Notifications.FindAsync(new object[] { notificationId }, cancellationToken);
+        if (notification != null && !notification.IsRead)
+        {
+            notification.IsRead = true;
+            notification.ReadAt = DateTime.UtcNow;
+        }
+    }
+
+    public async Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        await _context.Notifications
+            .Where(n => n.UserId == userId && !n.IsRead)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(n => n.IsRead, true)
+                .SetProperty(n => n.ReadAt, DateTime.UtcNow), cancellationToken);
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var notification = await _context.Notifications.FindAsync(new object[] { id }, cancellationToken);
+        if (notification != null)
+        {
+            _context.Notifications.Remove(notification);
+        }
+    }
+}
+
+public class TagFollowRepository : ITagFollowRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public TagFollowRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<TagFollow?> GetAsync(string userId, int tagId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TagFollows
+            .FirstOrDefaultAsync(tf => tf.UserId == userId && tf.TagId == tagId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<TagFollow>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TagFollows
+            .Where(tf => tf.UserId == userId)
+            .Include(tf => tf.Tag)
+            .OrderByDescending(tf => tf.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<TagFollow>> GetByTagIdAsync(int tagId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TagFollows
+            .Where(tf => tf.TagId == tagId)
+            .Include(tf => tf.User)
+            .OrderByDescending(tf => tf.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetFollowerCountAsync(int tagId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TagFollows.CountAsync(tf => tf.TagId == tagId, cancellationToken);
+    }
+
+    public async Task<bool> IsFollowingAsync(string userId, int tagId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TagFollows.AnyAsync(tf => tf.UserId == userId && tf.TagId == tagId, cancellationToken);
+    }
+
+    public async Task<TagFollow> AddAsync(TagFollow tagFollow, CancellationToken cancellationToken = default)
+    {
+        await _context.TagFollows.AddAsync(tagFollow, cancellationToken);
+        return tagFollow;
+    }
+
+    public async Task RemoveAsync(string userId, int tagId, CancellationToken cancellationToken = default)
+    {
+        var tagFollow = await GetAsync(userId, tagId, cancellationToken);
+        if (tagFollow != null)
+        {
+            _context.TagFollows.Remove(tagFollow);
+        }
+    }
+}
+
+public class CookieConsentRepository : ICookieConsentRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public CookieConsentRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<CookieConsent?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.CookieConsents
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.ConsentedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<CookieConsent?> GetByIpAddressAsync(string ipAddress, CancellationToken cancellationToken = default)
+    {
+        return await _context.CookieConsents
+            .Where(c => c.IpAddress == ipAddress && c.UserId == null)
+            .OrderByDescending(c => c.ConsentedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<CookieConsent> AddAsync(CookieConsent consent, CancellationToken cancellationToken = default)
+    {
+        await _context.CookieConsents.AddAsync(consent, cancellationToken);
+        return consent;
+    }
+
+    public Task UpdateAsync(CookieConsent consent, CancellationToken cancellationToken = default)
+    {
+        _context.CookieConsents.Update(consent);
+        return Task.CompletedTask;
+    }
+}

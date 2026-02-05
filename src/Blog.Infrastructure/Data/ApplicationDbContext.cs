@@ -20,11 +20,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Bookmark> Bookmarks => Set<Bookmark>();
     public DbSet<Follow> Follows => Set<Follow>();
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<PostView> PostViews => Set<PostView>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<TagFollow> TagFollows => Set<TagFollow>();
+    public DbSet<CookieConsent> CookieConsents => Set<CookieConsent>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
+
         // Apply all configurations from current assembly
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }

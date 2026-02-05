@@ -62,6 +62,8 @@ namespace Blog.Infrastructure.Migrations
                     IsBanned = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     BanReason = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    DataExportRequestedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    DataDeletionRequestedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
@@ -244,6 +246,35 @@ namespace Blog.Infrastructure.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "CookieConsents",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ConsentType = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    HasConsented = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IpAddress = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ConsentedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CookieConsents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CookieConsents_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Follows",
                 columns: table => new
                 {
@@ -303,6 +334,8 @@ namespace Blog.Infrastructure.Migrations
                     ReadingTimeMinutes = table.Column<int>(type: "int", nullable: false),
                     TrendingScore = table.Column<double>(type: "double", nullable: false),
                     TrendingScoreUpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    MentionedUserIds = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     AuthorId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -319,6 +352,35 @@ namespace Blog.Infrastructure.Migrations
                         name: "FK_Posts_AspNetUsers_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "TagFollows",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TagId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TagFollows", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TagFollows_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TagFollows_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -365,6 +427,8 @@ namespace Blog.Infrastructure.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsEdited = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    MentionedUserIds = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     AuthorId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PostId = table.Column<int>(type: "int", nullable: false),
@@ -451,6 +515,96 @@ namespace Blog.Infrastructure.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "PostViews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ViewerId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IpAddress = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserAgent = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ViewedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostViews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostViews_AspNetUsers_ViewerId",
+                        column: x => x.ViewerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_PostViews_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Type = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Content = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RelatedEntityType = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RelatedEntityId = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RelatedPostId = table.Column<int>(type: "int", nullable: true),
+                    RelatedCommentId = table.Column<int>(type: "int", nullable: true),
+                    RelatedUserId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsRead = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    ReadAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_RelatedUserId",
+                        column: x => x.RelatedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Comments_RelatedCommentId",
+                        column: x => x.RelatedCommentId,
+                        principalTable: "Comments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Posts_RelatedPostId",
+                        column: x => x.RelatedPostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Reports",
                 columns: table => new
                 {
@@ -464,6 +618,7 @@ namespace Blog.Infrastructure.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     ModeratorNotes = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    AdminReviewedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     ResolvedById = table.Column<string>(type: "varchar(450)", maxLength: 450, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ResolvedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
@@ -590,6 +745,16 @@ namespace Blog.Infrastructure.Migrations
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CookieConsents_IpAddress",
+                table: "CookieConsents",
+                column: "IpAddress");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CookieConsents_UserId",
+                table: "CookieConsents",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Follows_FollowerId",
                 table: "Follows",
                 column: "FollowerId");
@@ -617,6 +782,36 @@ namespace Blog.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_CreatedAt",
+                table: "Notifications",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_IsRead",
+                table: "Notifications",
+                column: "IsRead");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_RelatedCommentId",
+                table: "Notifications",
+                column: "RelatedCommentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_RelatedPostId",
+                table: "Notifications",
+                column: "RelatedPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_RelatedUserId",
+                table: "Notifications",
+                column: "RelatedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId",
+                table: "Notifications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Posts_AuthorId",
                 table: "Posts",
                 column: "AuthorId");
@@ -625,11 +820,6 @@ namespace Blog.Infrastructure.Migrations
                 name: "IX_Posts_CreatedAt",
                 table: "Posts",
                 column: "CreatedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_FullText",
-                table: "Posts",
-                columns: new[] { "Title", "Content" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_PublishedAt",
@@ -648,6 +838,11 @@ namespace Blog.Infrastructure.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Posts_TitleSearch",
+                table: "Posts",
+                column: "Title");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Posts_TrendingScore",
                 table: "Posts",
                 column: "TrendingScore");
@@ -656,6 +851,21 @@ namespace Blog.Infrastructure.Migrations
                 name: "IX_PostTags_TagId",
                 table: "PostTags",
                 column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostViews_PostId",
+                table: "PostViews",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostViews_ViewedAt",
+                table: "PostViews",
+                column: "ViewedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostViews_ViewerId",
+                table: "PostViews",
+                column: "ViewerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reports_CreatedAt",
@@ -693,6 +903,17 @@ namespace Blog.Infrastructure.Migrations
                 column: "Type");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TagFollows_TagId",
+                table: "TagFollows",
+                column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TagFollows_UserId_TagId",
+                table: "TagFollows",
+                columns: new[] { "UserId", "TagId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tags_Name",
                 table: "Tags",
                 column: "Name");
@@ -726,25 +947,37 @@ namespace Blog.Infrastructure.Migrations
                 name: "Bookmarks");
 
             migrationBuilder.DropTable(
+                name: "CookieConsents");
+
+            migrationBuilder.DropTable(
                 name: "Follows");
 
             migrationBuilder.DropTable(
                 name: "Likes");
 
             migrationBuilder.DropTable(
+                name: "Notifications");
+
+            migrationBuilder.DropTable(
                 name: "PostTags");
+
+            migrationBuilder.DropTable(
+                name: "PostViews");
 
             migrationBuilder.DropTable(
                 name: "Reports");
 
             migrationBuilder.DropTable(
+                name: "TagFollows");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "Comments");
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Posts");
