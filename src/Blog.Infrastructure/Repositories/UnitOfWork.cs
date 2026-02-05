@@ -17,6 +17,10 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IFollowRepository? _follows;
     private IReportRepository? _reports;
     private IUserRepository? _users;
+    private IPostViewRepository? _postViews;
+    private INotificationRepository? _notifications;
+    private ITagFollowRepository? _tagFollows;
+    private ICookieConsentRepository? _cookieConsents;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -32,6 +36,10 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IFollowRepository Followers => Follows; // Alias for Follows
     public IReportRepository Reports => _reports ??= new ReportRepository(_context);
     public IUserRepository Users => _users ??= new UserRepository(_context);
+    public IPostViewRepository PostViews => _postViews ??= new PostViewRepository(_context);
+    public INotificationRepository Notifications => _notifications ??= new NotificationRepository(_context);
+    public ITagFollowRepository TagFollows => _tagFollows ??= new TagFollowRepository(_context);
+    public ICookieConsentRepository CookieConsents => _cookieConsents ??= new CookieConsentRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

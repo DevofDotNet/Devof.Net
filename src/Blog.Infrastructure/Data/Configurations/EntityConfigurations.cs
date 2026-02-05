@@ -28,7 +28,7 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
     public void Configure(EntityTypeBuilder<Post> builder)
     {
         builder.HasKey(p => p.Id);
-        
+
         builder.Property(p => p.Title).IsRequired().HasMaxLength(200);
         builder.Property(p => p.Slug).IsRequired().HasMaxLength(250);
         builder.Property(p => p.Content).IsRequired().HasColumnType("LONGTEXT");
@@ -47,10 +47,10 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder.HasIndex(p => p.PublishedAt);
         builder.HasIndex(p => p.TrendingScore);
         builder.HasIndex(p => p.CreatedAt);
-        
-        // Full-text search index for MySQL
-        builder.HasIndex(p => new { p.Title, p.Content })
-               .HasDatabaseName("IX_Posts_FullText");
+
+        // Full-text search index for MySQL (only on Title, Content is LONGTEXT and can't be indexed)
+        builder.HasIndex(p => p.Title)
+               .HasDatabaseName("IX_Posts_TitleSearch");
 
         // Relationships
         builder.HasOne(p => p.Author)
@@ -65,7 +65,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
     public void Configure(EntityTypeBuilder<Tag> builder)
     {
         builder.HasKey(t => t.Id);
-        
+
         builder.Property(t => t.Name).IsRequired().HasMaxLength(50);
         builder.Property(t => t.Slug).IsRequired().HasMaxLength(60);
         builder.Property(t => t.Description).HasMaxLength(300);
@@ -100,7 +100,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
     public void Configure(EntityTypeBuilder<Comment> builder)
     {
         builder.HasKey(c => c.Id);
-        
+
         builder.Property(c => c.Content).IsRequired().HasMaxLength(5000);
         builder.Property(c => c.RenderedContent).HasMaxLength(6000);
 
@@ -132,7 +132,7 @@ public class LikeConfiguration : IEntityTypeConfiguration<Like>
     public void Configure(EntityTypeBuilder<Like> builder)
     {
         builder.HasKey(l => l.Id);
-        
+
         // Unique constraint: one like per user per post
         builder.HasIndex(l => new { l.UserId, l.PostId }).IsUnique();
         builder.HasIndex(l => l.PostId);
@@ -154,7 +154,7 @@ public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>
     public void Configure(EntityTypeBuilder<Bookmark> builder)
     {
         builder.HasKey(b => b.Id);
-        
+
         // Unique constraint: one bookmark per user per post
         builder.HasIndex(b => new { b.UserId, b.PostId }).IsUnique();
         builder.HasIndex(b => b.UserId);
@@ -176,7 +176,7 @@ public class FollowConfiguration : IEntityTypeConfiguration<Follow>
     public void Configure(EntityTypeBuilder<Follow> builder)
     {
         builder.HasKey(f => f.Id);
-        
+
         // Unique constraint: one follow relationship per pair
         builder.HasIndex(f => new { f.FollowerId, f.FollowingId }).IsUnique();
         builder.HasIndex(f => f.FollowerId);
@@ -199,7 +199,7 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
     public void Configure(EntityTypeBuilder<Report> builder)
     {
         builder.HasKey(r => r.Id);
-        
+
         builder.Property(r => r.Reason).IsRequired().HasMaxLength(100);
         builder.Property(r => r.Details).HasMaxLength(1000);
         builder.Property(r => r.ModeratorNotes).HasMaxLength(1000);

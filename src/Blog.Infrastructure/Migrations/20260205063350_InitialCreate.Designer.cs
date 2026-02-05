@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blog.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260204110228_InitialCreate")]
+    [Migration("20260205063350_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -50,6 +50,12 @@ namespace Blog.Infrastructure.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DataDeletionRequestedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DataExportRequestedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("DisplayName")
@@ -197,6 +203,9 @@ namespace Blog.Infrastructure.Migrations
                     b.Property<bool>("IsEdited")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("MentionedUserIds")
+                        .HasColumnType("longtext");
+
                     b.Property<int?>("ParentCommentId")
                         .HasColumnType("int");
 
@@ -221,6 +230,47 @@ namespace Blog.Infrastructure.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.CookieConsent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConsentType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ConsentedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("HasConsented")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("varchar(45)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IpAddress");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CookieConsents");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Follow", b =>
@@ -282,6 +332,71 @@ namespace Blog.Infrastructure.Migrations
                     b.ToTable("Likes");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("RelatedCommentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelatedEntityId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("RelatedPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelatedUserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("RelatedCommentId");
+
+                    b.HasIndex("RelatedPostId");
+
+                    b.HasIndex("RelatedUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -312,6 +427,9 @@ namespace Blog.Infrastructure.Migrations
                     b.Property<string>("Excerpt")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
+
+                    b.Property<string>("MentionedUserIds")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("MetaDescription")
                         .HasMaxLength(500)
@@ -376,10 +494,10 @@ namespace Blog.Infrastructure.Migrations
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("TrendingScore");
+                    b.HasIndex("Title")
+                        .HasDatabaseName("IX_Posts_TitleSearch");
 
-                    b.HasIndex("Title", "Content")
-                        .HasDatabaseName("IX_Posts_FullText");
+                    b.HasIndex("TrendingScore");
 
                     b.ToTable("Posts");
                 });
@@ -399,6 +517,49 @@ namespace Blog.Infrastructure.Migrations
                     b.ToTable("PostTags");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.PostView", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("varchar(45)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ViewerId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("ViewedAt");
+
+                    b.HasIndex("ViewerId");
+
+                    b.ToTable("PostViews");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Report", b =>
                 {
                     b.Property<int>("Id")
@@ -406,6 +567,9 @@ namespace Blog.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AdminReviewedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -515,6 +679,34 @@ namespace Blog.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.TagFollow", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("UserId", "TagId")
+                        .IsUnique();
+
+                    b.ToTable("TagFollows");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -694,6 +886,16 @@ namespace Blog.Infrastructure.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.CookieConsent", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("CookieConsents")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Follow", b =>
                 {
                     b.HasOne("Blog.Domain.Entities.ApplicationUser", "Follower")
@@ -732,6 +934,38 @@ namespace Blog.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.Comment", "RelatedComment")
+                        .WithMany()
+                        .HasForeignKey("RelatedCommentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Blog.Domain.Entities.Post", "RelatedPost")
+                        .WithMany()
+                        .HasForeignKey("RelatedPostId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Blog.Domain.Entities.ApplicationUser", "RelatedUser")
+                        .WithMany()
+                        .HasForeignKey("RelatedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Blog.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RelatedComment");
+
+                    b.Navigation("RelatedPost");
+
+                    b.Navigation("RelatedUser");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Post", b =>
                 {
                     b.HasOne("Blog.Domain.Entities.ApplicationUser", "Author")
@@ -760,6 +994,24 @@ namespace Blog.Infrastructure.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.PostView", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.Post", "Post")
+                        .WithMany("PostViews")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Blog.Domain.Entities.ApplicationUser", "Viewer")
+                        .WithMany("PostViews")
+                        .HasForeignKey("ViewerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Viewer");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Report", b =>
@@ -792,6 +1044,25 @@ namespace Blog.Infrastructure.Migrations
                     b.Navigation("ReportedUser");
 
                     b.Navigation("Reporter");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.TagFollow", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.Tag", "Tag")
+                        .WithMany("TagFollows")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Blog.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("TagFollows")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tag");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -851,17 +1122,25 @@ namespace Blog.Infrastructure.Migrations
 
                     b.Navigation("Comments");
 
+                    b.Navigation("CookieConsents");
+
                     b.Navigation("Followers");
 
                     b.Navigation("Following");
 
                     b.Navigation("Likes");
 
+                    b.Navigation("Notifications");
+
+                    b.Navigation("PostViews");
+
                     b.Navigation("Posts");
 
                     b.Navigation("ReportsReceived");
 
                     b.Navigation("ReportsSubmitted");
+
+                    b.Navigation("TagFollows");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Comment", b =>
@@ -881,12 +1160,16 @@ namespace Blog.Infrastructure.Migrations
 
                     b.Navigation("PostTags");
 
+                    b.Navigation("PostViews");
+
                     b.Navigation("Reports");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Tag", b =>
                 {
                     b.Navigation("PostTags");
+
+                    b.Navigation("TagFollows");
                 });
 #pragma warning restore 612, 618
         }

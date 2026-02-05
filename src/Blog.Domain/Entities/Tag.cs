@@ -9,16 +9,17 @@ public class Tag : BaseEntity
     public string? Description { get; set; }
     public string? IconUrl { get; set; }
     public string? Color { get; set; } // Hex color for tag display
-    
+
     // Navigation Properties
     public virtual ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
+    public virtual ICollection<TagFollow> TagFollows { get; set; } = new List<TagFollow>();
 }
 
 public class PostTag
 {
     public int PostId { get; set; }
     public virtual Post Post { get; set; } = null!;
-    
+
     public int TagId { get; set; }
     public virtual Tag Tag { get; set; } = null!;
 }

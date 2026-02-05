@@ -87,6 +87,46 @@ public interface IReportRepository
     Task UpdateAsync(Report report, CancellationToken cancellationToken = default);
 }
 
+public interface IPostViewRepository
+{
+    Task<PostView> AddAsync(PostView postView, CancellationToken cancellationToken = default);
+    Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default);
+    Task<int> GetUniqueViewCountByPostIdAsync(int postId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<PostView>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<IEnumerable<PostView>> GetByUserIdAsync(string userId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<bool> HasViewedAsync(int postId, string? userId, string ipAddress, CancellationToken cancellationToken = default);
+}
+
+public interface INotificationRepository
+{
+    Task<Notification?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Notification>> GetByUserIdAsync(string userId, bool unreadOnly, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetUnreadCountAsync(string userId, CancellationToken cancellationToken = default);
+    Task<Notification> AddAsync(Notification notification, CancellationToken cancellationToken = default);
+    Task MarkAsReadAsync(int notificationId, CancellationToken cancellationToken = default);
+    Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+}
+
+public interface ITagFollowRepository
+{
+    Task<TagFollow?> GetAsync(string userId, int tagId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TagFollow>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TagFollow>> GetByTagIdAsync(int tagId, CancellationToken cancellationToken = default);
+    Task<int> GetFollowerCountAsync(int tagId, CancellationToken cancellationToken = default);
+    Task<bool> IsFollowingAsync(string userId, int tagId, CancellationToken cancellationToken = default);
+    Task<TagFollow> AddAsync(TagFollow tagFollow, CancellationToken cancellationToken = default);
+    Task RemoveAsync(string userId, int tagId, CancellationToken cancellationToken = default);
+}
+
+public interface ICookieConsentRepository
+{
+    Task<CookieConsent?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
+    Task<CookieConsent?> GetByIpAddressAsync(string ipAddress, CancellationToken cancellationToken = default);
+    Task<CookieConsent> AddAsync(CookieConsent consent, CancellationToken cancellationToken = default);
+    Task UpdateAsync(CookieConsent consent, CancellationToken cancellationToken = default);
+}
+
 public interface IUserRepository
 {
     Task<ApplicationUser?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
@@ -106,6 +146,10 @@ public interface IUnitOfWork
     IFollowRepository Followers { get; } // Alias for Follows
     IReportRepository Reports { get; }
     IUserRepository Users { get; }
+    IPostViewRepository PostViews { get; }
+    INotificationRepository Notifications { get; }
+    ITagFollowRepository TagFollows { get; }
+    ICookieConsentRepository CookieConsents { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
