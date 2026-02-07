@@ -2,6 +2,8 @@
 @model Blog.Web.Pages.AboutModel
 @{
     ViewData["Title"] = "About Us";
+    ViewData["MetaDescription"] = "Learn about Devof.NET - A community-driven platform for .NET developers to share tutorials, articles, and insights on C#, ASP.NET Core, and modern software development.";
+    ViewData["MetaKeywords"] = "About Devof.NET, .NET developer community, ASP.NET Core platform, C# tutorials platform, developer blog about";
 }
 
 <div class="static-page">
@@ -47,9 +49,9 @@
 
             @if (User.Identity?.IsAuthenticated != true)
             {
-                <div style="margin-top: var(--spacing-xl);">
-                    <a href="/Account/Register" class="btn btn-primary btn-lg">Get Started</a>
-                </div>
+                    <div style="margin-top: var(--spacing-xl);">
+                        <a href="/Account/Register" class="btn btn-primary btn-lg">Get Started</a>
+                    </div>
             }
         </div>
     </div>

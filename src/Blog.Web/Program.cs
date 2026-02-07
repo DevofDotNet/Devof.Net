@@ -8,6 +8,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 
@@ -127,6 +128,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizePage("/Post/Edit");
 });
 
+// API Controllers
+builder.Services.AddControllers();
+
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
@@ -145,12 +149,51 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/ServerError");
     app.UseHsts();
+
+    // Security Headers
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Append("X-Frame-Options", "DENY");
+        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+        context.Response.Headers.Append("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+        context.Response.Headers.Append("Content-Security-Policy",
+            "default-src 'self'; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; " +
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
+            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+            "img-src 'self' data: https:; " +
+            "connect-src 'self' https://www.google-analytics.com; " +
+            "frame-ancestors 'none';");
+        await next();
+    });
 }
 
+// Custom status code pages
+app.UseStatusCodePagesWithReExecute("/NotFound");
+app.Use(async (context, next) =>
+{
+    await next();
+    if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+    {
+        context.Request.Path = "/NotFound";
+        await next();
+    }
+});
+
 app.UseHttpsRedirection();
+
+// URL Rewrites
+var rewriteOptions = new RewriteOptions()
+    .AddRewrite(@"^sitemap\.xml$", "Sitemap", skipRemainingRules: true)
+    .AddRewrite(@"^rss\.xml$", "Feed", skipRemainingRules: true)
+    .AddRewrite(@"^feed\.xml$", "Feed", skipRemainingRules: true);
+app.UseRewriter(rewriteOptions);
+
 app.UseStaticFiles();
+
 
 app.UseRouting();
 app.UseRateLimiter();
@@ -159,6 +202,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 
 // Create database and seed data
 using (var scope = app.Services.CreateScope())
@@ -166,6 +210,10 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        // Auto-apply migrations
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
+
         // Seed Database
         await SeedData.InitializeAsync(services);
     }

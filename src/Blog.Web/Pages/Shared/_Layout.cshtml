@@ -1,17 +1,109 @@
 ﻿<!DOCTYPE html>
 <html lang="en" data-theme="light">
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Devof.NET</title>
-    <meta name="description" content="@(ViewData["MetaDescription"] ?? "A community of developers sharing knowledge, building together.")" />
-    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "programming, development, .NET, C#, tutorials")" />
 
-    <!-- Open Graph -->
+    @* <!-- Favicons & PWA -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    <link rel="apple-touch-icon" href="/images/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#6366f1" /> *@
+
+    <link rel="icon" type="image/png" href="/images/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Devof.NET" />
+    <link rel="manifest" href="/images/site.webmanifest" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+
+    <title>@ViewData["Title"] - Devof.NET | .NET Developer Community</title>
+    <meta name="description"
+        content="@(ViewData["MetaDescription"] ?? "Devof.NET - The premier community for .NET developers. Learn C#, ASP.NET Core, Blazor, and modern web development through tutorials, articles, and expert insights.")" />
+    <meta name="keywords"
+        content="@(ViewData["MetaKeywords"] ?? ".NET, C#, ASP.NET Core, Blazor, Entity Framework, Web API, Developer Blog, Programming Tutorials, Software Development, Microsoft .NET, Full Stack Development, Backend Development")" />
+    <meta name="author" content="Devof.NET Community" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:title" content="@ViewData["Title"] - Devof.NET" />
-    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "A community of developers sharing knowledge.")" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="@(ViewData["OgImage"] ?? "/images/og-default.png")" />
+    <meta property="og:description"
+        content="@(ViewData["MetaDescription"] ?? "The premier community for .NET developers. Learn, share, and grow together.")" />
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
+    <meta property="og:url" content="@(ViewData["CanonicalUrl"] ?? $"https://devof.net{Context.Request.Path}")" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? "https://devof.net/images/og-default.png")" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Devof.NET" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@@devofnet" />
+    <meta name="twitter:title" content="@ViewData["Title"] - Devof.NET" />
+    <meta name="twitter:description"
+        content="@(ViewData["MetaDescription"] ?? "The premier community for .NET developers.")" />
+    <meta name="twitter:image" content="@(ViewData["OgImage"] ?? "https://devof.net/images/og-default.png")" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? $"https://devof.net{Context.Request.Path}")" />
+
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="Devof.NET RSS Feed" href="https://devof.net/feed" />
+
+
+    <!-- JSON-LD Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
+        "name": "Devof.NET",
+        "url": "https://devof.net",
+        "logo": "https://devof.net/images/logo.png",
+        "description": "A community-driven platform for .NET developers to share knowledge, tutorials, and best practices",
+        "sameAs": [
+            "https://github.com/avikeid2007/DFevofNet"
+        ]
+    }
+    </script>
+
+    <!-- JSON-LD Structured Data - WebSite with Search -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "Devof.NET",
+        "url": "https://devof.net",
+        "description": "The premier community for .NET developers to learn, share knowledge, and grow together",
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "https://devof.net/Search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Google Analytics (Replace G-XXXXXXXXXX with your actual GA4 ID) -->
+    @{
+        var gaId = Configuration?["GoogleAnalytics:MeasurementId"];
+        if (!string.IsNullOrEmpty(gaId))
+        {
+            <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag() { dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', '@gaId');
+            </script>
+        }
+    }
+
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +117,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
     <div class="app-container">
         <!-- Navigation -->
@@ -32,8 +125,8 @@
             <div class="navbar-container">
                 <div class="navbar-left">
                     <a href="/" class="navbar-brand">
-                        <img src="/images/logo.png" alt="Devof.NET" class="brand-logo" />
-                        <span class="brand-text">Devof<span class="brand-accent">.NET</span></span>
+                        <img src="/images/logo.png" alt="D" class="brand-logo-letter" /><span
+                            class="brand-text">evof<span class="brand-accent">.NET</span></span>
                     </a>
                     <div class="search-container">
                         <form action="/Search" method="get" class="search-form">
@@ -52,46 +145,46 @@
                 <div class="navbar-right">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                            <a href="/Post/Create" class="btn btn-primary btn-create">
-                                <i class="fas fa-pen"></i>
-                                <span>Create Post</span>
-                            </a>
-                            <div class="dropdown">
-                                <button class="dropdown-toggle user-menu" id="userDropdown">
-                                    <img src="@(User.FindFirst("AvatarUrl")?.Value ?? "/images/default-avatar.png")" 
-                                         alt="@User.Identity.Name" class="user-avatar" />
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right" id="userDropdownMenu">
-                                    <a href="/Author/@User.Identity.Name" class="dropdown-item">
-                                        <i class="fas fa-user"></i> Profile
-                                    </a>
-                                    <a href="/Settings/Bookmarks" class="dropdown-item">
-                                        <i class="fas fa-bookmark"></i> Bookmarks
-                                    </a>
-                                    <a href="/Settings" class="dropdown-item">
-                                        <i class="fas fa-cog"></i> Settings
-                                    </a>
+                        <a href="/Post/Create" class="btn btn-primary btn-create">
+                            <i class="fas fa-pen"></i>
+                            <span>Create Post</span>
+                        </a>
+                        <div class="dropdown">
+                            <button class="dropdown-toggle user-menu" id="userDropdown">
+                                <img src="@(User.FindFirst("AvatarUrl")?.Value ?? "/images/default-avatar.png")"
+                                    alt="@User.Identity.Name" class="user-avatar" />
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" id="userDropdownMenu">
+                                <a href="/Author/@User.Identity.Name" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <a href="/Settings/Bookmarks" class="dropdown-item">
+                                    <i class="fas fa-bookmark"></i> Bookmarks
+                                </a>
+                                <a href="/Settings" class="dropdown-item">
+                                    <i class="fas fa-cog"></i> Settings
+                                </a>
                                 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                                 {
-                                            <hr class="dropdown-divider" />
-                                            <a href="/Admin" class="dropdown-item">
-                                                <i class="fas fa-shield-alt"></i> Admin Panel
-                                            </a>
-                                }
                                     <hr class="dropdown-divider" />
-                                    <form method="post" asp-page="/Account/Logout">
+                                    <a href="/Admin" class="dropdown-item">
+                                        <i class="fas fa-shield-alt"></i> Admin Panel
+                                    </a>
+                                }
+                                <hr class="dropdown-divider" />
+                                <form method="post" asp-page="/Account/Logout">
                                     @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt"></i> Logout
-                                        </button>
-                                    </form>
-                                </div>
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
                             </div>
+                        </div>
                     }
                     else
                     {
-                            <a href="/Account/Login" class="btn btn-outline">Login</a>
-                            <a href="/Account/Register" class="btn btn-primary">Sign Up</a>
+                        <a href="/Account/Login" class="btn btn-outline">Login</a>
+                        <a href="/Account/Register" class="btn btn-primary">Sign Up</a>
                     }
                     <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
                         <i class="fas fa-moon"></i>
@@ -119,16 +212,68 @@
                     <a href="/Terms">Terms</a>
                 </div>
                 <div class="footer-social">
-                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="https://github.com/avikeid2007/DFevofNet" aria-label="GitHub" target="_blank"
+                        rel="noopener"><i class="fab fa-github"></i></a>
+                    <a href="/feed" aria-label="RSS Feed"><i class="fas fa-rss"></i></a>
                 </div>
+
+                <!-- Newsletter Subscription -->
+                <div class="footer-newsletter">
+                    <p class="newsletter-title">Subscribe to our newsletter</p>
+                    <form action="/api/newsletter/subscribe" method="post" class="newsletter-form" id="newsletterForm">
+                        <input type="email" name="email" placeholder="Enter your email" required
+                            class="newsletter-input" />
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    <p class="newsletter-hint">Get the latest posts delivered to your inbox.</p>
+                </div>
+
                 <p class="footer-copyright">© @DateTime.Now.Year Devof.NET. Built with ❤️ and .NET</p>
             </div>
         </footer>
     </div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Newsletter subscription
+        document.getElementById('newsletterForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const btn = form.querySelector('button');
+            const hint = form.nextElementSibling;
+            const originalHtml = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    hint.textContent = result.message;
+                    hint.style.color = 'var(--color-success)';
+                    form.reset();
+                } else {
+                    hint.textContent = result.message;
+                    hint.style.color = 'var(--color-danger)';
+                }
+            } catch (error) {
+                hint.textContent = 'Something went wrong. Please try again.';
+                hint.style.color = 'var(--color-danger)';
+            }
+            
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

@@ -1,0 +1,119 @@
+@page
+@model NotFoundModel
+@{
+    ViewData["Title"] = "Page Not Found";
+    Layout = "_Layout";
+}
+
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-message">
+            Oops! The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+            <a href="/Search" class="btn btn-outline">
+                <i class="fas fa-search"></i> Search
+            </a>
+        </div>
+        <div class="error-suggestions">
+            <p>Here are some helpful links:</p>
+            <ul>
+                <li><a href="/">Browse Latest Posts</a></li>
+                <li><a href="/Tag">Explore Tags</a></li>
+                <li><a href="/About">About Us</a></li>
+                <li><a href="/Contact">Contact Support</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .error-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding: 2rem;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color, #6366f1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .error-message {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .error-actions .btn {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .error-suggestions {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .error-suggestions p {
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .error-suggestions ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            justify-content: center;
+        }
+
+        .error-suggestions a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .error-suggestions a:hover {
+            text-decoration: underline;
+        }
+    </style>
+}

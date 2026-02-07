@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<TagFollow> TagFollows => Set<TagFollow>();
     public DbSet<CookieConsent> CookieConsents => Set<CookieConsent>();
+    public DbSet<Subscriber> Subscribers => Set<Subscriber>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
