@@ -3,162 +3,198 @@
 @{
     ViewData["Title"] = Model.Post?.Title ?? "Post Not Found";
     ViewData["MetaDescription"] = Model.Post?.MetaDescription ?? Model.Post?.Excerpt;
-    ViewData["MetaKeywords"] = Model.Post?.MetaKeywords;
+    ViewData["MetaKeywords"] = Model.Post?.MetaKeywords ?? (Model.Post != null ? string.Join(", ", Model.Post.Tags.Select(t => t.Name)) : "");
     ViewData["OgImage"] = Model.Post?.CoverImageUrl;
+    ViewData["OgType"] = "article";
+    ViewData["CanonicalUrl"] = $"https://devof.net/post/{Model.Post?.Slug}";
+}
+
+@if (Model.Post != null)
+{
+        <!-- Article Schema for Rich Snippets -->
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Article",
+            "headline": "@Model.Post.Title",
+            "description": "@(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
+            "image": "@(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
+            "author": {
+                "@@type": "Person",
+                "name": "@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
+                "url": "https://devof.net/Author/@Model.Post.Author.UserName"
+            },
+            "publisher": {
+                "@@type": "Organization",
+                "name": "Devof.NET",
+                "logo": {
+                    "@@type": "ImageObject",
+                    "url": "https://devof.net/images/logo.png"
+                }
+            },
+            "datePublished": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+            "dateModified": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+            "mainEntityOfPage": {
+                "@@type": "WebPage",
+                "@@id": "https://devof.net/post/@Model.Post.Slug"
+            },
+            "keywords": "@string.Join(", ", Model.Post.Tags.Select(t => t.Name))"
+        }
+        </script>
 }
 
 @if (Model.Post == null)
 {
-    <div class="empty-state">
-        <div class="empty-state-icon">🔍</div>
-        <h3 class="empty-state-title">Post not found</h3>
-        <p class="empty-state-description">The post you're looking for doesn't exist or has been removed.</p>
-        <a href="/" class="btn btn-primary">Go Home</a>
-    </div>
+        <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">Post not found</h3>
+            <p class="empty-state-description">The post you're looking for doesn't exist or has been removed.</p>
+            <a href="/" class="btn btn-primary">Go Home</a>
+        </div>
 }
 else
 {
-    <div id="reading-progress" class="reading-progress"></div>
-    
-    <article class="post-detail">
+        <div id="reading-progress" class="reading-progress"></div>
+
+        <article class="post-detail">
         @if (!string.IsNullOrEmpty(Model.Post.CoverImageUrl))
         {
-            <div class="post-cover">
-                <img src="@Model.Post.CoverImageUrl" alt="@Model.Post.Title" />
-            </div>
+                    <div class="post-cover">
+                        <img src="@Model.Post.CoverImageUrl" alt="@Model.Post.Title" />
+                    </div>
         }
 
-        <header class="post-header">
-            <div class="post-tags">
+            <header class="post-header">
+                <div class="post-tags">
                 @foreach (var tag in Model.Post.Tags)
                 {
-                    <a href="/Tag/@tag.Slug" class="tag"
-                       style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
-                        #@tag.Name
-                    </a>
+                            <a href="/Tag/@tag.Slug" class="tag"
+                               style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
+                                #@tag.Name
+                            </a>
                 }
-            </div>
+                </div>
 
-            <h1 class="post-title">@Model.Post.Title</h1>
+                <h1 class="post-title">@Model.Post.Title</h1>
 
-            <div class="post-meta">
-                <a href="/Author/@Model.Post.Author.UserName" class="post-author">
-                    <img src="@(Model.Post.Author.AvatarUrl ?? "/images/default-avatar.png")" 
-                         alt="@Model.Post.Author.DisplayName" class="author-avatar" />
-                    <div class="author-info">
-                        <span class="author-name">@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)</span>
-                        <span class="post-date">
-                            Published @Model.Post.PublishedAt?.ToString("MMMM dd, yyyy") · @Model.Post.ReadingTimeMinutes min read
-                        </span>
-                    </div>
-                </a>
-            </div>
-        </header>
+                <div class="post-meta">
+                    <a href="/Author/@Model.Post.Author.UserName" class="post-author">
+                        <img src="@(Model.Post.Author.AvatarUrl ?? "/images/default-avatar.png")" 
+                             alt="@Model.Post.Author.DisplayName" class="author-avatar" />
+                        <div class="author-info">
+                            <span class="author-name">@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)</span>
+                            <span class="post-date">
+                                Published @Model.Post.PublishedAt?.ToString("MMMM dd, yyyy") · @Model.Post.ReadingTimeMinutes min read
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </header>
 
-        <div class="post-content markdown-content">
+            <div class="post-content markdown-content">
             @Html.Raw(Model.Post.RenderedContent)
-        </div>
-
-        <footer class="post-footer">
-            <div class="post-actions">
-                <form method="post" asp-page-handler="Like" class="inline-form" id="like-form" data-slug="@Model.Post.Slug">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="action-btn @(Model.Post.IsLiked ? "active" : "")" id="like-btn">
-                        <i class="@(Model.Post.IsLiked ? "fas" : "far") fa-heart" id="like-icon"></i>
-                        <span id="like-count">@Model.Post.LikeCount</span>
-                    </button>
-                </form>
-                
-                <button type="button" class="action-btn" onclick="document.getElementById('comments').scrollIntoView({behavior: 'smooth'})">
-                    <i class="far fa-comment"></i>
-                    <span>@Model.Post.CommentCount</span>
-                </button>
-                
-                <form method="post" asp-page-handler="Bookmark" class="inline-form" id="bookmark-form" data-slug="@Model.Post.Slug">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="action-btn @(Model.Post.IsBookmarked ? "active" : "")" id="bookmark-btn">
-                        <i class="@(Model.Post.IsBookmarked ? "fas" : "far") fa-bookmark" id="bookmark-icon"></i>
-                    </button>
-                </form>
-                
-                <button type="button" class="action-btn" onclick="copyToClipboard(window.location.href, this)">
-                    <i class="far fa-share-square"></i>
-                </button>
             </div>
-        </footer>
-    </article>
 
-    <!-- Comments Section -->
-    <section id="comments" class="comments-section">
-        <h2 class="section-title">Comments (@Model.Comments.Count)</h2>
+            <footer class="post-footer">
+                <div class="post-actions">
+                    <form method="post" asp-page-handler="Like" class="inline-form" id="like-form" data-slug="@Model.Post.Slug">
+                    @Html.AntiForgeryToken()
+                        <button type="submit" class="action-btn @(Model.Post.IsLiked ? "active" : "")" id="like-btn">
+                            <i class="@(Model.Post.IsLiked ? "fas" : "far") fa-heart" id="like-icon"></i>
+                            <span id="like-count">@Model.Post.LikeCount</span>
+                        </button>
+                    </form>
+
+                    <button type="button" class="action-btn" onclick="document.getElementById('comments').scrollIntoView({behavior: 'smooth'})">
+                        <i class="far fa-comment"></i>
+                        <span>@Model.Post.CommentCount</span>
+                    </button>
+
+                    <form method="post" asp-page-handler="Bookmark" class="inline-form" id="bookmark-form" data-slug="@Model.Post.Slug">
+                    @Html.AntiForgeryToken()
+                        <button type="submit" class="action-btn @(Model.Post.IsBookmarked ? "active" : "")" id="bookmark-btn">
+                            <i class="@(Model.Post.IsBookmarked ? "fas" : "far") fa-bookmark" id="bookmark-icon"></i>
+                        </button>
+                    </form>
+
+                    <button type="button" class="action-btn" onclick="copyToClipboard(window.location.href, this)">
+                        <i class="far fa-share-square"></i>
+                    </button>
+                </div>
+            </footer>
+        </article>
+
+        <!-- Comments Section -->
+        <section id="comments" class="comments-section">
+            <h2 class="section-title">Comments (@Model.Comments.Count)</h2>
 
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <form method="post" asp-page-handler="Comment" class="comment-form card">
+                    <form method="post" asp-page-handler="Comment" class="comment-form card">
                 @Html.AntiForgeryToken()
-                <div class="card-body">
-                    <textarea name="content" class="form-textarea" placeholder="Write a comment..." required></textarea>
-                    <button type="submit" class="btn btn-primary mt-2">Post Comment</button>
-                </div>
-            </form>
+                        <div class="card-body">
+                            <textarea name="content" class="form-textarea" placeholder="Write a comment..." required></textarea>
+                            <button type="submit" class="btn btn-primary mt-2">Post Comment</button>
+                        </div>
+                    </form>
         }
         else
         {
-            <div class="card">
-                <div class="card-body text-center">
-                    <p>Please <a href="/Account/Login?returnUrl=@HttpContext.Request.Path">sign in</a> to leave a comment.</p>
-                </div>
-            </div>
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <p>Please <a href="/Account/Login?returnUrl=@HttpContext.Request.Path">sign in</a> to leave a comment.</p>
+                        </div>
+                    </div>
         }
 
-        <div class="comments-list">
+            <div class="comments-list">
             @foreach (var comment in Model.Comments)
             {
-                <div class="comment-item card" id="comment-@comment.Id">
-                    <div class="card-body">
-                        <div class="comment-header">
-                            <a href="/Author/@comment.Author.UserName" class="comment-author">
-                                <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
-                                <span class="comment-author-name">@(comment.Author.DisplayName ?? comment.Author.UserName)</span>
-                            </a>
-                            <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        <div class="comment-item card" id="comment-@comment.Id">
+                            <div class="card-body">
+                                <div class="comment-header">
+                                    <a href="/Author/@comment.Author.UserName" class="comment-author">
+                                        <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
+                                        <span class="comment-author-name">@(comment.Author.DisplayName ?? comment.Author.UserName)</span>
+                                    </a>
+                                    <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
                             @if (comment.IsEdited)
                             {
-                                <span class="comment-edited">(edited)</span>
+                                            <span class="comment-edited">(edited)</span>
                             }
-                        </div>
-                        <div class="comment-content markdown-content">
+                                </div>
+                                <div class="comment-content markdown-content">
                             @Html.Raw(comment.RenderedContent ?? comment.Content)
-                        </div>
-                        
-                        <!-- Replies -->
+                                </div>
+
+                                <!-- Replies -->
                         @if (comment.Replies.Any())
                         {
-                            <div class="comment-replies">
+                                        <div class="comment-replies">
                                 @foreach (var reply in comment.Replies)
                                 {
-                                    <div class="comment-item reply" id="comment-@reply.Id">
-                                        <div class="comment-header">
-                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
-                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
-                                                <span class="comment-author-name">@(reply.Author.DisplayName ?? reply.Author.UserName)</span>
-                                            </a>
-                                            <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
-                                        </div>
-                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
-                                    </div>
+                                                    <div class="comment-item reply" id="comment-@reply.Id">
+                                                        <div class="comment-header">
+                                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
+                                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
+                                                                <span class="comment-author-name">@(reply.Author.DisplayName ?? reply.Author.UserName)</span>
+                                                            </a>
+                                                            <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                                        </div>
+                                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
+                                                    </div>
                                 }
-                            </div>
+                                        </div>
                         }
-                    </div>
-                </div>
+                            </div>
+                        </div>
             }
-        </div>
-    </section>
+            </div>
+        </section>
 }
 
 @section Scripts {
-    <script src="~/js/post-interactions.js" asp-append-version="true"></script>
+        <script src="~/js/post-interactions.js" asp-append-version="true"></script>
 }
 
 <style>

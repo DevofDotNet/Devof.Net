@@ -1,0 +1,109 @@
+@page
+@model ServerErrorModel
+@{
+    ViewData["Title"] = "Something Went Wrong";
+    Layout = "_Layout";
+}
+
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-code">500</div>
+        <h1 class="error-title">Something Went Wrong</h1>
+        <p class="error-message">
+            We're sorry! An unexpected error occurred. Our team has been notified and is working on it.
+        </p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+            <button onclick="location.reload()" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Try Again
+            </button>
+        </div>
+        @if (Model.ShowRequestId)
+        {
+            <div class="error-details">
+                <p><strong>Request ID:</strong> <code>@Model.RequestId</code></p>
+                <p class="error-hint">Please include this ID if you contact support.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .error-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: 2rem;
+    }
+
+    .error-container {
+        text-align: center;
+        max-width: 500px;
+    }
+
+    .error-code {
+        font-size: 8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ef4444, #f97316);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+
+    .error-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
+    }
+
+    .error-message {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .error-actions .btn {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .error-details {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        border: 1px solid var(--border-color);
+        margin-top: 1rem;
+    }
+
+    .error-details p {
+        margin: 0.25rem 0;
+        font-size: 0.875rem;
+    }
+
+    .error-details code {
+        background: var(--bg-secondary);
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    .error-hint {
+        color: var(--text-muted);
+        font-size: 0.8rem !important;
+    }
+</style>
+}

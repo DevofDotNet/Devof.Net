@@ -2,6 +2,39 @@
 @model Blog.Web.Pages.Author.ProfileModel
 @{
     ViewData["Title"] = Model.Profile?.DisplayName ?? "Author Not Found";
+    ViewData["MetaDescription"] = Model.Profile != null
+        ? $"View {Model.Profile.DisplayName}'s profile on Devof.NET. {Model.Profile.PostCount} posts, {Model.Profile.FollowerCount} followers. {Model.Profile.Bio ?? "Developer and author."}"
+        : "Author profile on Devof.NET";
+    ViewData["OgImage"] = Model.Profile?.AvatarUrl ?? "https://devof.net/images/og-default.png";
+}
+
+@if (Model.Profile != null)
+{
+        <!-- Person Schema for Author Rich Snippets -->
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Person",
+            "name": "@Model.Profile.DisplayName",
+            "url": "https://devof.net/Author/@Model.Profile.UserName",
+            "image": "@(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png")",
+            "description": "@(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET")",
+            "sameAs": [
+        @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
+        {
+            <text>"@Model.Profile.GitHubUrl"</text>
+        }
+        @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
+        {
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) ? "," : "")@Html.Raw($"\"{Model.Profile.TwitterUrl}\"")</text>
+        }
+        @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
+        {
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) || !string.IsNullOrEmpty(Model.Profile.TwitterUrl) ? "," : "")@Html.Raw($"\"{Model.Profile.LinkedInUrl}\"")</text>
+        }
+        ]
+    }
+    </script>
 }
 
 @if (Model.Profile == null)
@@ -24,47 +57,47 @@ else
                     <div class="author-info">
                         <h1 class="author-name">@Model.Profile.DisplayName</h1>
                         <p class="author-username">@@@Model.Profile.UserName</p>
-                        @if (!string.IsNullOrEmpty(Model.Profile.Bio))
-                        {
-                            <p class="author-bio">@Model.Profile.Bio</p>
-                        }
+                    @if (!string.IsNullOrEmpty(Model.Profile.Bio))
+                    {
+                                <p class="author-bio">@Model.Profile.Bio</p>
+                    }
                         <div class="author-social">
-                            @if (!string.IsNullOrEmpty(Model.Profile.WebsiteUrl))
-                            {
-                                <a href="@Model.Profile.WebsiteUrl" target="_blank" rel="noopener" class="social-link">
-                                    <i class="fas fa-globe"></i>
-                                </a>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
-                            {
-                                <a href="@Model.Profile.GitHubUrl" target="_blank" rel="noopener" class="social-link">
-                                    <i class="fab fa-github"></i>
-                                </a>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
-                            {
-                                <a href="@Model.Profile.TwitterUrl" target="_blank" rel="noopener" class="social-link">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
-                            {
-                                <a href="@Model.Profile.LinkedInUrl" target="_blank" rel="noopener" class="social-link">
-                                    <i class="fab fa-linkedin"></i>
-                                </a>
-                            }
+                        @if (!string.IsNullOrEmpty(Model.Profile.WebsiteUrl))
+                        {
+                                    <a href="@Model.Profile.WebsiteUrl" target="_blank" rel="noopener" class="social-link">
+                                        <i class="fas fa-globe"></i>
+                                    </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
+                        {
+                                    <a href="@Model.Profile.GitHubUrl" target="_blank" rel="noopener" class="social-link">
+                                        <i class="fab fa-github"></i>
+                                    </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
+                        {
+                                    <a href="@Model.Profile.TwitterUrl" target="_blank" rel="noopener" class="social-link">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
+                        {
+                                    <a href="@Model.Profile.LinkedInUrl" target="_blank" rel="noopener" class="social-link">
+                                        <i class="fab fa-linkedin"></i>
+                                    </a>
+                        }
                         </div>
                     </div>
                     <div class="author-actions">
-                        @if (User.Identity?.IsAuthenticated == true && User.Identity.Name != Model.Profile.UserName)
-                        {
-                            <form method="post" asp-page-handler="Follow">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn @(Model.Profile.IsFollowing ? "btn-outline" : "btn-primary")">
-                                    @(Model.Profile.IsFollowing ? "Following" : "Follow")
-                                </button>
-                            </form>
-                        }
+                    @if (User.Identity?.IsAuthenticated == true && User.Identity.Name != Model.Profile.UserName)
+                    {
+                                <form method="post" asp-page-handler="Follow">
+                            @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn @(Model.Profile.IsFollowing ? "btn-outline" : "btn-primary")">
+                                @(Model.Profile.IsFollowing ? "Following" : "Follow")
+                                    </button>
+                                </form>
+                    }
                     </div>
                 </div>
                 <div class="author-stats">
@@ -86,56 +119,56 @@ else
 
         <section class="author-posts">
             <h2 class="section-title">Posts by @Model.Profile.DisplayName</h2>
-            @if (Model.Posts.Items.Any())
-            {
-                <div class="posts-grid">
-                    @foreach (var post in Model.Posts.Items)
-                    {
-                        <article class="card post-card">
-                            @if (!string.IsNullOrEmpty(post.CoverImageUrl))
-                            {
-                                <img src="@post.CoverImageUrl" alt="@post.Title" class="post-card-cover" loading="lazy" />
-                            }
-                            <div class="post-card-content">
-                                <a href="/post/@post.Slug" class="post-card-title">@post.Title</a>
-                                <p class="post-card-excerpt">@post.Excerpt</p>
-                                <div class="post-card-tags">
-                                    @foreach (var tag in post.Tags.Take(3))
-                                    {
-                                        <a href="/Tag/@tag.Slug" class="tag">
-                                            #@tag.Name
-                                        </a>
-                                    }
-                                </div>
-                                <div class="post-card-meta">
-                                    <span class="post-card-date">@post.PublishedAt?.ToString("MMM dd, yyyy")</span>
-                                    <div class="post-card-stats">
-                                        <span class="post-stat"><i class="fas fa-heart"></i> @post.LikeCount</span>
-                                        <span class="post-stat"><i class="fas fa-comment"></i> @post.CommentCount</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    }
-                </div>
-
-                @if (Model.Posts.TotalPages > 1)
+        @if (Model.Posts.Items.Any())
+        {
+                    <div class="posts-grid">
+                @foreach (var post in Model.Posts.Items)
                 {
-                    <nav class="pagination">
-                        @for (var i = 1; i <= Model.Posts.TotalPages; i++)
+                                <article class="card post-card">
+                        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
                         {
-                            <a href="/Author/@Model.Profile.UserName?page=@i" 
-                               class="pagination-link @(i == Model.Posts.Page ? "active" : "")">@i</a>
+                                            <img src="@post.CoverImageUrl" alt="@post.Title" class="post-card-cover" loading="lazy" />
                         }
-                    </nav>
+                                    <div class="post-card-content">
+                                        <a href="/post/@post.Slug" class="post-card-title">@post.Title</a>
+                                        <p class="post-card-excerpt">@post.Excerpt</p>
+                                        <div class="post-card-tags">
+                                @foreach (var tag in post.Tags.Take(3))
+                                {
+                                                    <a href="/Tag/@tag.Slug" class="tag">
+                                                        #@tag.Name
+                                                    </a>
+                                }
+                                        </div>
+                                        <div class="post-card-meta">
+                                            <span class="post-card-date">@post.PublishedAt?.ToString("MMM dd, yyyy")</span>
+                                            <div class="post-card-stats">
+                                                <span class="post-stat"><i class="fas fa-heart"></i> @post.LikeCount</span>
+                                                <span class="post-stat"><i class="fas fa-comment"></i> @post.CommentCount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
                 }
-            }
-            else
+                    </div>
+
+            @if (Model.Posts.TotalPages > 1)
             {
-                <div class="empty-state">
-                    <p>No posts yet.</p>
-                </div>
+                            <nav class="pagination">
+                    @for (var i = 1; i <= Model.Posts.TotalPages; i++)
+                    {
+                                        <a href="/Author/@Model.Profile.UserName?page=@i" 
+                                           class="pagination-link @(i == Model.Posts.Page ? "active" : "")">@i</a>
+                    }
+                            </nav>
             }
+        }
+        else
+        {
+                    <div class="empty-state">
+                        <p>No posts yet.</p>
+                    </div>
+        }
         </section>
     </div>
 }
