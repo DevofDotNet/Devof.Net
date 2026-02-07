@@ -1,6 +1,18 @@
 User-agent: *
 Allow: /
+
+# Disallow admin and account areas
 Disallow: /Admin/
-Disallow: /Settings/
 Disallow: /Account/
-Sitemap: /sitemap.xml
+Disallow: /Settings/
+
+# Disallow API endpoints if any
+Disallow: /api/
+
+# Allow CSS and JS
+Allow: /css/
+Allow: /js/
+Allow: /images/
+
+# Sitemap location
+Sitemap: https://devof.net/sitemap.xml

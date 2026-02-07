@@ -1,16 +1,7 @@
 @page
 @model Blog.Web.Pages.SitemapModel
-@{
-    Layout = null;
-}
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    @foreach (var url in Model.Urls)
-    {
-        <url>
-            <loc>@url</loc>
-            <changefreq>daily</changefreq>
-            <priority>0.5</priority>
-        </url>
-    }
-</urlset>
+@*
+    This page generates a sitemap.xml dynamically.
+    The actual XML content is generated programmatically in the code-behind (Sitemap.cshtml.cs)
+    using XmlWriter for proper formatting and performance.
+*@
