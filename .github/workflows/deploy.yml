@@ -13,19 +13,23 @@ jobs:
 
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 8.0.x
 
-    - run: dotnet publish -c Release -o publish
+    - name: Publish
+      run: dotnet publish -c Release -o out
 
-    - uses: appleboy/scp-action@v0.1.7
+    - name: Upload files to /var/www/devof.net
+      uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        source: "publish/*"
+        source: "out/**"
         target: "/var/www/devof.net"
+        strip_components: 1
 
-    - uses: appleboy/ssh-action@v1.0.3
+    - name: Restart Devof Service
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
