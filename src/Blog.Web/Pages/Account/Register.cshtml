@@ -12,6 +12,14 @@
                 <p class="auth-subtitle">Create an account to start sharing your knowledge</p>
             </div>
 
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    @Model.SuccessMessage
+                </div>
+            }
+
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
             {
                 <div class="alert alert-danger">

@@ -42,6 +42,10 @@ public class ApplicationUser : IdentityUser
     public virtual ICollection<PostView> PostViews { get; set; } = new List<PostView>();
     public virtual ICollection<CookieConsent> CookieConsents { get; set; } = new List<CookieConsent>();
 
+    // Newsletter Subscription
+    public bool NewsletterSubscribed { get; set; } = false;
+    public DateTime? NewsletterSubscribedAt { get; set; }
+
     // GDPR Compliance
     public DateTime? DataExportRequestedAt { get; set; }
     public DateTime? DataDeletionRequestedAt { get; set; }

@@ -1,0 +1,129 @@
+@page
+@model Blog.Web.Pages.NewsletterModel
+@{
+    ViewData["Title"] = "Newsletter";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-envelope-heart text-primary mb-3" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 14H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l3.235 1.94a2.8 2.8 0 0 0-.233 1.027L1 5.384v5.721l3.453-2.124c.146.277.329.556.55.835l-3.97 2.443A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741l-3.968-2.442c.22-.28.403-.56.55-.836L15 11.105V5.383l-3.002 1.801a2.8 2.8 0 0 0-.233-1.026L15 4.217V4a1 1 0 0 0-1-1zm6 2.993c1.664-1.711 5.825 1.283 0 5.132-5.825-3.85-1.664-6.843 0-5.132"/>
+                        </svg>
+                        <h1 class="display-5 fw-bold">Newsletter</h1>
+                        <p class="lead text-muted">Stay updated with the latest posts and tech insights from Devof.NET</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+                    {
+                            <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") mb-4">
+                                <i class="fas @(Model.IsSuccess ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+                            @Model.StatusMessage
+                            </div>
+                    }
+
+                    @if (Model.IsAuthenticated)
+                    {
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle"></i>
+                                You are currently <strong>@(Model.CurrentlySubscribed ? "subscribed" : "not subscribed")</strong> to the newsletter.
+                            </div>
+                    }
+
+                    <div class="newsletter-benefits mb-4">
+                        <h5 class="mb-3">Why Subscribe?</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Get notified about new blog posts
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Exclusive tech tips and tutorials
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Weekly roundup of trending topics
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                No spam, unsubscribe anytime
+                            </li>
+                        </ul>
+                    </div>
+
+                    <form method="post" class="newsletter-form">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">Email Address</label>
+                            @if (Model.IsAuthenticated)
+                            {
+                                <input asp-for="Input.Email" class="form-control form-control-lg" 
+                                       type="email" 
+                                       placeholder="you@example.com"
+                                       readonly />
+                            }
+                            else
+                            {
+                                <input asp-for="Input.Email" class="form-control form-control-lg" 
+                                       type="email" 
+                                       placeholder="you@example.com" />
+                            }
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            @if (!Model.IsAuthenticated || !Model.CurrentlySubscribed)
+                            {
+                                    <button type="submit" name="action" value="subscribe" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>Subscribe to Newsletter
+                                    </button>
+                            }
+
+                            @if (Model.IsAuthenticated && Model.CurrentlySubscribed)
+                            {
+                                    <button type="submit" name="action" value="unsubscribe" class="btn btn-outline-danger btn-lg">
+                                        <i class="fas fa-times-circle me-2"></i>Unsubscribe
+                                    </button>
+                            }
+                        </div>
+
+                        <p class="text-muted text-center mt-3" style="font-size: 0.875rem;">
+                            We respect your privacy. Your email will never be shared with third parties.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .newsletter-benefits li {
+        padding: 0.5rem 0;
+        font-size: 1rem;
+    }
+
+    .newsletter-form {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .card {
+        border: none;
+        border-radius: 1rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+    }
+</style>
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}
