@@ -1,9 +1,11 @@
 using Blog.Application.Services;
 using Blog.Application.Validators;
+using Blog.Domain.Common;
 using Blog.Domain.Entities;
 using Blog.Domain.Interfaces;
 using Blog.Infrastructure.Data;
 using Blog.Infrastructure.Repositories;
+using Blog.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
@@ -31,7 +33,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequiredLength = 8;
 
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = false; // Set to true in production with email service
+    options.SignIn.RequireConfirmedEmail = true; // Now enabled with Brevo email service
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -88,6 +90,10 @@ builder.Services.AddSingleton<IMarkdownService, MarkdownService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDataExportService, DataExportService>();
+
+// Email Service
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, BrevoEmailService>();
 
 // Image Service
 var uploadPath = Path.Combine(builder.Environment.WebRootPath ?? "wwwroot", "uploads");
@@ -202,6 +208,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Custom route for sitemap.xml
+app.MapGet("/sitemap.xml", async context =>
+{
+    context.Response.Redirect("/Sitemap");
+    await Task.CompletedTask;
+});
+
 app.MapControllers();
 
 // Create database and seed data
