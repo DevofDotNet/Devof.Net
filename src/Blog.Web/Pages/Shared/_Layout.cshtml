@@ -18,17 +18,28 @@
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Devof.NET" />
-    <link rel="manifest" href="/images/site.webmanifest" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#6366f1" />
     <meta name="msapplication-TileColor" content="#6366f1" />
 
+    <!-- RSS Feed Autodiscovery -->
+    <link rel="alternate" type="application/rss+xml" title="Devof.NET RSS Feed" href="/feed.xml" />
+
     <title>@ViewData["Title"] - Devof.NET | .NET Developer Community</title>
+    
+    @if (ViewData["Robots"] != null)
+    {
+        <meta name="robots" content="@ViewData["Robots"]" />
+    }
+    else
+    {
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    }
     <meta name="description"
         content="@(ViewData["MetaDescription"] ?? "Devof.NET - The premier community for .NET developers. Learn C#, ASP.NET Core, Blazor, and modern web development through tutorials, articles, and expert insights.")" />
     <meta name="keywords"
         content="@(ViewData["MetaKeywords"] ?? ".NET, C#, ASP.NET Core, Blazor, Entity Framework, Web API, Developer Blog, Programming Tutorials, Software Development, Microsoft .NET, Full Stack Development, Backend Development")" />
     <meta name="author" content="Devof.NET Community" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
 
     <!-- Open Graph / Facebook -->

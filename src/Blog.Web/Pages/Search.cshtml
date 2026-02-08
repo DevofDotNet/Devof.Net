@@ -5,6 +5,7 @@
     ViewData["MetaDescription"] = string.IsNullOrWhiteSpace(Model.Q) 
         ? "Search Devof.NET for tutorials, articles, and insights on C#, ASP.NET Core, Blazor, and .NET development."
         : $"Search results for '{Model.Q}' on Devof.NET - Find the best .NET and C# tutorials.";
+    ViewData["Robots"] = "noindex, follow";
 }
 
 <div class="search-page">
