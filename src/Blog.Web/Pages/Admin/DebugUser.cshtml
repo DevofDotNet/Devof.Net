@@ -1,0 +1,54 @@
+@page
+@model Blog.Web.Pages.Admin.DebugUserModel
+@{
+    ViewData["Title"] = "Debug User";
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+    <h1>Debug User</h1>
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="email" name="Email" class="form-control" placeholder="Enter email" value="@Model.Email" />
+            <button type="submit" class="btn btn-primary">Inspect</button>
+        </div>
+    </form>
+
+    @if (Model.TargetUser != null)
+    {
+            <div class="card">
+                <div class="card-header">User Details</div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Id</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.Id</dd>
+
+                        <dt class="col-sm-3">UserName</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.UserName</dd>
+
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.Email</dd>
+
+                        <dt class="col-sm-3">EmailConfirmed</dt>
+                        <dd class="col-sm-9 text-@(Model.TargetUser.EmailConfirmed ? "success" : "danger")">@Model.TargetUser.EmailConfirmed</dd>
+
+                        <dt class="col-sm-3">SecurityStamp</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.SecurityStamp</dd>
+
+                        <dt class="col-sm-3">ConcurrencyStamp</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.ConcurrencyStamp</dd>
+
+                        <dt class="col-sm-3">Roles</dt>
+                        <dd class="col-sm-9">@(Model.Roles != null ? string.Join(", ", Model.Roles) : "None")</dd>
+
+                        <dt class="col-sm-3">DisplayName</dt>
+                        <dd class="col-sm-9">@Model.TargetUser.DisplayName</dd>
+                    </dl>
+                </div>
+            </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.Email))
+    {
+            <div class="alert alert-warning">User not found</div>
+    }
+</div>

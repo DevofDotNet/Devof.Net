@@ -3,368 +3,752 @@
 @{
     ViewData["Title"] = Model.Post?.Title ?? "Post Not Found";
     ViewData["MetaDescription"] = Model.Post?.MetaDescription ?? Model.Post?.Excerpt;
-    ViewData["MetaKeywords"] = Model.Post?.MetaKeywords ?? (Model.Post != null ? string.Join(", ", Model.Post.Tags.Select(t => t.Name)) : "");
+    ViewData["MetaKeywords"] = Model.Post?.MetaKeywords ?? (Model.Post != null ? string.Join(", ", Model.Post.Tags.Select(t
+    => t.Name)) : "");
     ViewData["OgImage"] = Model.Post?.CoverImageUrl;
     ViewData["OgType"] = "article";
     ViewData["CanonicalUrl"] = $"https://devof.net/post/{Model.Post?.Slug}";
+
+    var isAuthor = User.Identity?.IsAuthenticated == true &&
+    (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.Post?.Author.Id);
+    var isAdmin = User.IsInRole("Admin");
+    var canEdit = isAuthor || isAdmin;
 }
 
 @if (Model.Post != null)
 {
-        <!-- Article Schema for Rich Snippets -->
-        <script type="application/ld+json">
-        {
-            "@@context": "https://schema.org",
-            "@@type": "Article",
-            "headline": "@Model.Post.Title",
-            "description": "@(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
-            "image": "@(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
-            "author": {
-                "@@type": "Person",
-                "name": "@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
-                "url": "https://devof.net/Author/@Model.Post.Author.UserName"
-            },
-            "publisher": {
-                "@@type": "Organization",
-                "name": "Devof.NET",
-                "logo": {
-                    "@@type": "ImageObject",
-                    "url": "https://devof.net/images/logo.png"
-                }
-            },
-            "datePublished": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
-            "dateModified": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
-            "mainEntityOfPage": {
-                "@@type": "WebPage",
-                "@@id": "https://devof.net/post/@Model.Post.Slug"
-            },
-            "keywords": "@string.Join(", ", Model.Post.Tags.Select(t => t.Name))"
-        }
-        </script>
+    <!-- Article Schema for Rich Snippets -->
+    <script type="application/ld+json">
+                            {
+                                "@@context": "https://schema.org",
+                                "@@type": "Article",
+                                "headline": "@Model.Post.Title",
+                                "description": "@(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
+                                "image": "@(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
+                                "author": {
+                                    "@@type": "Person",
+                                    "name": "@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
+                                    "url": "https://devof.net/Author/@Model.Post.Author.UserName"
+                                },
+                                "publisher": {
+                                    "@@type": "Organization",
+                                    "name": "Devof.NET",
+                                    "logo": {
+                                        "@@type": "ImageObject",
+                                        "url": "https://devof.net/images/logo.png"
+                                    }
+                                },
+                                "datePublished": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+                                "dateModified": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
+                                "mainEntityOfPage": {
+                                    "@@type": "WebPage",
+                                    "@@id": "https://devof.net/post/@Model.Post.Slug"
+                                },
+                                "keywords": "@string.Join(", ", Model.Post.Tags.Select(t => t.Name))"
+                            }
+                            </script>
 }
 
 @if (Model.Post == null)
 {
-        <div class="empty-state">
-            <div class="empty-state-icon">🔍</div>
-            <h3 class="empty-state-title">Post not found</h3>
-            <p class="empty-state-description">The post you're looking for doesn't exist or has been removed.</p>
-            <a href="/" class="btn btn-primary">Go Home</a>
-        </div>
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3 class="empty-state-title">Post not found</h3>
+        <p class="empty-state-description">The post you're looking for doesn't exist or has been removed.</p>
+        <a href="/" class="btn btn-primary">Go Home</a>
+    </div>
 }
 else
 {
-        <div id="reading-progress" class="reading-progress"></div>
+    <div id="reading-progress" class="reading-progress"></div>
 
+    <div class="post-layout">
+        <!-- Main Content -->
         <article class="post-detail">
-        @if (!string.IsNullOrEmpty(Model.Post.CoverImageUrl))
-        {
-                    <div class="post-cover">
-                        <img src="@Model.Post.CoverImageUrl" alt="@Model.Post.Title" />
-                    </div>
-        }
+            @if (!string.IsNullOrEmpty(Model.Post.CoverImageUrl))
+            {
+                <div class="post-cover">
+                    <img src="@Model.Post.CoverImageUrl" alt="@Model.Post.Title" />
+                </div>
+            }
 
             <header class="post-header">
                 <div class="post-tags">
-                @foreach (var tag in Model.Post.Tags)
-                {
-                            <a href="/Tag/@tag.Slug" class="tag"
-                               style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
-                                #@tag.Name
-                            </a>
-                }
+                    @foreach (var tag in Model.Post.Tags)
+                    {
+                        <a href="/Tag/@tag.Slug" class="tag"
+                            style="@(tag.Color != null ? $"background: {tag.Color}20; color: {tag.Color};" : "")">
+                            #@tag.Name
+                        </a>
+                    }
                 </div>
 
                 <h1 class="post-title">@Model.Post.Title</h1>
 
-                <div class="post-meta">
+                <div class="post-meta-row">
                     <a href="/Author/@Model.Post.Author.UserName" class="post-author">
-                        <img src="@(Model.Post.Author.AvatarUrl ?? "/images/default-avatar.png")" 
-                             alt="@Model.Post.Author.DisplayName" class="author-avatar" />
+                        <img src="@(Model.Post.Author.AvatarUrl ?? "/images/default-avatar.png")"
+                            alt="@Model.Post.Author.DisplayName" class="author-avatar" />
                         <div class="author-info">
                             <span class="author-name">@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)</span>
                             <span class="post-date">
-                                Published @Model.Post.PublishedAt?.ToString("MMMM dd, yyyy") · @Model.Post.ReadingTimeMinutes min read
+                                Published @Model.Post.PublishedAt?.ToString("MMMM dd, yyyy") ·
+                                @Model.Post.ReadingTimeMinutes min read
                             </span>
                         </div>
                     </a>
+
+                    @if (canEdit)
+                    {
+                        <div class="post-admin-actions">
+                            <a asp-page="/Post/Edit" asp-route-id="@Model.Post.Id" class="btn btn-sm btn-outline">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form method="post" asp-page="/Post/Edit" asp-page-handler="Delete" asp-route-id="@Model.Post.Id"
+                                onsubmit="return confirm('Are you sure you want to delete this post?');"
+                                style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="PostId" value="@Model.Post.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger-outline">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </header>
 
             <div class="post-content markdown-content">
-            @Html.Raw(Model.Post.RenderedContent)
+                @Html.Raw(Model.Post.RenderedContent)
             </div>
 
             <footer class="post-footer">
-                <div class="post-actions">
-                    <form method="post" asp-page-handler="Like" class="inline-form" id="like-form" data-slug="@Model.Post.Slug">
-                    @Html.AntiForgeryToken()
-                        <button type="submit" class="action-btn @(Model.Post.IsLiked ? "active" : "")" id="like-btn">
-                            <i class="@(Model.Post.IsLiked ? "fas" : "far") fa-heart" id="like-icon"></i>
-                            <span id="like-count">@Model.Post.LikeCount</span>
+                <div class="post-actions-row">
+                    <div class="post-actions-left">
+                        <form method="post" asp-page-handler="Like" class="inline-form" id="like-form"
+                            data-slug="@Model.Post.Slug">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="action-btn @(Model.Post.IsLiked ? "active" : "")" id="like-btn"
+                                title="Like">
+                                <i class="@(Model.Post.IsLiked ? "fas" : "far") fa-heart" id="like-icon"></i>
+                                <span id="like-count">@Model.Post.LikeCount</span>
+                            </button>
+                        </form>
+
+                        <button type="button" class="action-btn"
+                            onclick="document.getElementById('comments').scrollIntoView({behavior: 'smooth'})"
+                            title="Comments">
+                            <i class="far fa-comment"></i>
+                            <span>@Model.Post.CommentCount</span>
                         </button>
-                    </form>
 
-                    <button type="button" class="action-btn" onclick="document.getElementById('comments').scrollIntoView({behavior: 'smooth'})">
-                        <i class="far fa-comment"></i>
-                        <span>@Model.Post.CommentCount</span>
-                    </button>
+                        <form method="post" asp-page-handler="Bookmark" class="inline-form" id="bookmark-form"
+                            data-slug="@Model.Post.Slug">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="action-btn @(Model.Post.IsBookmarked ? "active" : "")"
+                                id="bookmark-btn" title="Bookmark">
+                                <i class="@(Model.Post.IsBookmarked ? "fas" : "far") fa-bookmark" id="bookmark-icon"></i>
+                            </button>
+                        </form>
+                    </div>
 
-                    <form method="post" asp-page-handler="Bookmark" class="inline-form" id="bookmark-form" data-slug="@Model.Post.Slug">
-                    @Html.AntiForgeryToken()
-                        <button type="submit" class="action-btn @(Model.Post.IsBookmarked ? "active" : "")" id="bookmark-btn">
-                            <i class="@(Model.Post.IsBookmarked ? "fas" : "far") fa-bookmark" id="bookmark-icon"></i>
+                    <div class="post-actions-right">
+                        <span class="share-label">Share:</span>
+                        <a href="https://twitter.com/intent/tweet?text=@Uri.EscapeDataString(Model.Post.Title)&url=@Uri.EscapeDataString($"https://devof.net/post/{Model.Post.Slug}")"
+                            target="_blank" rel="noopener noreferrer" class="social-share-btn twitter"
+                            title="Share on Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString($"https://devof.net/post/{Model.Post.Slug}")"
+                            target="_blank" rel="noopener noreferrer" class="social-share-btn linkedin"
+                            title="Share on LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=@Uri.EscapeDataString($"https://devof.net/post/{Model.Post.Slug}")"
+                            target="_blank" rel="noopener noreferrer" class="social-share-btn facebook"
+                            title="Share on Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <button type="button" class="action-btn" onclick="copyToClipboard(window.location.href, this)"
+                            title="Copy Link">
+                            <i class="far fa-link"></i>
                         </button>
-                    </form>
-
-                    <button type="button" class="action-btn" onclick="copyToClipboard(window.location.href, this)">
-                        <i class="far fa-share-square"></i>
-                    </button>
+                    </div>
                 </div>
             </footer>
         </article>
 
-        <!-- Comments Section -->
-        <section id="comments" class="comments-section">
-            <h2 class="section-title">Comments (@Model.Comments.Count)</h2>
+        <!-- Sidebar (TOC) -->
+        <aside class="post-sidebar">
+            <div class="sticky-sidebar">
+                @if (Model.RelatedPosts.Any())
+                {
+                    <div class="related-posts-widget">
+                        <h3 class="widget-title">Related Posts</h3>
+                        <div class="related-posts-list">
+                            @foreach (var related in Model.RelatedPosts)
+                            {
+                                <a href="/post/@related.Slug" class="related-post-item">
+                                    @if (!string.IsNullOrEmpty(related.CoverImageUrl))
+                                    {
+                                        <div class="related-post-image">
+                                            <img src="@related.CoverImageUrl" alt="@related.Title" />
+                                        </div>
+                                    }
+                                    <div class="related-post-info">
+                                        <h4 class="related-post-title">@related.Title</h4>
+                                        <span class="related-post-date">@related.PublishedAt?.ToString("MMM dd")</span>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="toc-widget" id="toc-widget" style="display: none;">
+                    <h3 class="widget-title">Table of Contents</h3>
+                    <nav id="toc-content" class="toc-content"></nav>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Comments Section -->
+    <section id="comments" class="comments-section">
+        <h2 class="section-title">Comments (@Model.Comments.Count)</h2>
 
         @if (User.Identity?.IsAuthenticated == true)
         {
-                    <form method="post" asp-page-handler="Comment" class="comment-form card">
+            <form method="post" asp-page-handler="Comment" class="comment-form card">
                 @Html.AntiForgeryToken()
-                        <div class="card-body">
-                            <textarea name="content" class="form-textarea" placeholder="Write a comment..." required></textarea>
-                            <button type="submit" class="btn btn-primary mt-2">Post Comment</button>
-                        </div>
-                    </form>
+                <div class="card-body">
+                    <textarea name="content" class="form-textarea" placeholder="Write a comment..." required></textarea>
+                    <button type="submit" class="btn btn-primary mt-2">Post Comment</button>
+                </div>
+            </form>
         }
         else
         {
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <p>Please <a href="/Account/Login?returnUrl=@HttpContext.Request.Path">sign in</a> to leave a comment.</p>
-                        </div>
-                    </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p>Please <a href="/Account/Login?returnUrl=@HttpContext.Request.Path">sign in</a> to leave a comment.</p>
+                </div>
+            </div>
         }
 
-            <div class="comments-list">
+        <div class="comments-list">
             @foreach (var comment in Model.Comments)
             {
-                        <div class="comment-item card" id="comment-@comment.Id">
-                            <div class="card-body">
-                                <div class="comment-header">
-                                    <a href="/Author/@comment.Author.UserName" class="comment-author">
-                                        <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
-                                        <span class="comment-author-name">@(comment.Author.DisplayName ?? comment.Author.UserName)</span>
-                                    </a>
-                                    <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
+                <div class="comment-item card" id="comment-@comment.Id">
+                    <div class="card-body">
+                        <div class="comment-header">
+                            <a href="/Author/@comment.Author.UserName" class="comment-author">
+                                <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                    class="comment-avatar" />
+                                <span class="comment-author-name">@(comment.Author.DisplayName ??
+                            comment.Author.UserName)</span>
+                            </a>
+                            <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
                             @if (comment.IsEdited)
                             {
-                                            <span class="comment-edited">(edited)</span>
+                                <span class="comment-edited">(edited)</span>
                             }
-                                </div>
-                                <div class="comment-content markdown-content">
+                        </div>
+                        <div class="comment-content markdown-content">
                             @Html.Raw(comment.RenderedContent ?? comment.Content)
-                                </div>
+                        </div>
 
-                                <!-- Replies -->
+                        <!-- Replies -->
                         @if (comment.Replies.Any())
                         {
-                                        <div class="comment-replies">
+                            <div class="comment-replies">
                                 @foreach (var reply in comment.Replies)
                                 {
-                                                    <div class="comment-item reply" id="comment-@reply.Id">
-                                                        <div class="comment-header">
-                                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
-                                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt="" class="comment-avatar" />
-                                                                <span class="comment-author-name">@(reply.Author.DisplayName ?? reply.Author.UserName)</span>
-                                                            </a>
-                                                            <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
-                                                        </div>
-                                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
-                                                    </div>
-                                }
+                                    <div class="comment-item reply" id="comment-@reply.Id">
+                                        <div class="comment-header">
+                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
+                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                                    class="comment-avatar" />
+                                                <span class="comment-author-name">@(reply.Author.DisplayName ??
+                                    reply.Author.UserName)</span>
+                                            </a>
+                                            <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
-                        }
+                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
+                                    </div>
+                                }
                             </div>
-                        </div>
+                        }
+                    </div>
+                </div>
             }
-            </div>
-        </section>
+        </div>
+    </section>
+
+    <!-- Inline Scripts (since @@section Scripts may not be rendered by layout) -->
+    <script src="/js/post-interactions.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Initialize code block enhancements
+        (function () {
+            function initCodeBlocks() {
+                // Generate Table of Contents
+                const content = document.querySelector('.post-content');
+                const tocWidget = document.getElementById('toc-widget');
+                const tocContent = document.getElementById('toc-content');
+
+                if (content && tocWidget && tocContent) {
+                    const headings = content.querySelectorAll('h2, h3');
+
+                    if (headings.length > 1) {
+                        tocWidget.style.display = 'block';
+                        const ul = document.createElement('ul');
+
+                        headings.forEach((heading, index) => {
+                            const id = heading.id || `heading-${index}`;
+                            heading.id = id;
+
+                            const li = document.createElement('li');
+                            li.className = heading.tagName.toLowerCase();
+
+                            const a = document.createElement('a');
+                            a.href = `#${id}`;
+                            a.textContent = heading.textContent;
+
+                            // Smooth scroll to heading
+                            a.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                heading.scrollIntoView({ behavior: 'smooth' });
+                                history.pushState(null, null, `#${id}`);
+                            });
+
+                            li.appendChild(a);
+                            ul.appendChild(li);
+                        });
+
+                        tocContent.appendChild(ul);
+                    }
+                }
+
+                // Add Copy Button and Language Label to Code Blocks
+                const codeBlocks = document.querySelectorAll('pre code');
+
+                codeBlocks.forEach((code) => {
+                    const pre = code.parentElement;
+
+                    // Skip if already wrapped
+                    if (pre.parentElement && pre.parentElement.classList.contains('code-block-wrapper')) {
+                        return;
+                    }
+
+                    // wrapper for positioning
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'code-block-wrapper';
+                    pre.parentNode.insertBefore(wrapper, pre);
+                    wrapper.appendChild(pre);
+
+                    // Detect language from class (e.g., language-csharp)
+                    const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
+                    const lang = langClass ? langClass.replace('language-', '').toUpperCase() : 'CODE';
+
+                    // Add language label
+                    const langLabel = document.createElement('span');
+                    langLabel.className = 'code-lang-label';
+                    langLabel.textContent = lang;
+                    wrapper.appendChild(langLabel);
+
+                    // Add copy button
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-code-btn';
+                    copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                    copyBtn.title = 'Copy code';
+
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(code.innerText).then(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                            copyBtn.classList.add('copied');
+                            setTimeout(() => {
+                                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                                copyBtn.classList.remove('copied');
+                            }, 2000);
+                        });
+                    });
+
+                    wrapper.appendChild(copyBtn);
+                });
+            }
+
+            // Run immediately if DOM is ready, otherwise wait for it
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCodeBlocks);
+            } else {
+                initCodeBlocks();
+            }
+        })();
+    </script>
 }
 
-@section Scripts {
-        <script src="~/js/post-interactions.js" asp-append-version="true"></script>
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        .post-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-2xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @@media (min-width: 1024px) {
+            .post-layout {
+                grid-template-columns: minmax(0, 1fr) 300px;
+            }
+        }
+
+        .post-detail {
+            max-width: 100%;
+        }
+
+        .sticky-sidebar {
+            position: sticky;
+            top: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        /* Related Posts */
+        .related-posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .related-post-item {
+            display: flex;
+            gap: var(--spacing-md);
+            text-decoration: none;
+            color: var(--color-text);
+            transition: transform var(--transition-fast);
+        }
+
+        .related-post-item:hover {
+            transform: translateX(4px);
+        }
+
+        .related-post-item:hover .related-post-title {
+            color: var(--color-primary);
+        }
+
+        .related-post-image {
+            width: 80px;
+            height: 60px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .related-post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-post-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .related-post-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 var(--spacing-xs);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .related-post-date {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        /* TOC */
+        .toc-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-content li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .toc-content li.h3 {
+            padding-left: var(--spacing-lg);
+            font-size: 0.9em;
+        }
+
+        .toc-content a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 2px 0;
+            transition: color var(--transition-fast);
+        }
+
+        .toc-content a:hover {
+            color: var(--color-primary);
+        }
+
+        /* Reading Progress */
+        .reading-progress {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            z-index: 1000;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* Code Block Wrapper */
+        .code-block-wrapper {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .code-block-wrapper pre {
+            margin: 0;
+            border-radius: var(--radius-lg);
+            padding-top: 2.5rem !important;
+        }
+
+        .code-lang-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(255, 255, 255, 0.15);
+            color: #a0aec0;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-lg) 0 var(--radius-md) 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 10;
+        }
+
+        .copy-code-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+            font-size: 0.85rem;
+        }
+
+        .copy-code-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .copy-code-btn.copied {
+            color: #4ade80;
+        }
+
+        /* Reduced Author Avatar Size */
+        .post-header .post-author img.author-avatar,
+        .post-header .author-avatar,
+        .post-meta-row .author-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Comment Avatar Size - Much smaller */
+        .comment-header img.comment-avatar,
+        .comment-author img.comment-avatar,
+        .comments-section img.comment-avatar,
+        img.comment-avatar {
+            width: 36px !important;
+            height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* Reply avatars even smaller */
+        .comment-item.reply img.comment-avatar {
+            width: 28px !important;
+            height: 28px !important;
+            max-width: 28px !important;
+            max-height: 28px !important;
+        }
+
+        /* Improved Action Buttons */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.9rem;
+            background: var(--color-bg-secondary, #f8fafc);
+            border: 1px solid var(--color-border);
+            border-radius: 9999px;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--color-bg-hover, #f1f5f9);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .action-btn.active {
+            color: #ef4444;
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+
+        .action-btn i {
+            font-size: 1rem;
+        }
+
+        /* Existing Post Styles updated */
+        .post-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .post-actions-left {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .post-actions-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .share-label {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-right: var(--spacing-xs);
+        }
+
+        .social-share-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .social-share-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .social-share-btn.twitter {
+            background: #1DA1F2;
+        }
+
+        .social-share-btn.linkedin {
+            background: #0077b5;
+        }
+
+        .social-share-btn.facebook {
+            background: #4267B2;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .btn-danger-outline {
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
+            background: transparent;
+        }
+
+        .btn-danger-outline:hover {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        /* Comments updated */
+        .comments-section {
+            max-width: 100%;
+            margin-top: var(--spacing-2xl);
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* Comment item layout fix */
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-item.reply .comment-avatar {
+            width: 28px !important;
+            height: 28px !important;
+        }
+    </style>
 }
 
-<style>
-    .reading-progress {
-        position: fixed;
-        top: 64px;
-        left: 0;
-        height: 3px;
-        background: var(--gradient-primary);
-        z-index: 1000;
-        width: 0%;
-        transition: width 0.1s ease;
-    }
-    .post-detail {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .post-cover {
-        margin: 0 -1rem var(--spacing-xl);
-        border-radius: var(--radius-xl);
-        overflow: hidden;
-    }
-    .post-cover img {
-        width: 100%;
-        height: auto;
-        max-height: 400px;
-        object-fit: cover;
-    }
-    .post-header {
-        margin-bottom: var(--spacing-2xl);
-    }
-    .post-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-xs);
-        margin-bottom: var(--spacing-md);
-    }
-    .post-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: var(--spacing-lg);
-    }
-    .post-meta {
-        display: flex;
-        align-items: center;
-    }
-    .post-author {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        color: var(--color-text);
-    }
-    .post-author:hover .author-name {
-        color: var(--color-primary);
-    }
-    .author-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--radius-full);
-    }
-    .author-info {
-        display: flex;
-        flex-direction: column;
-    }
-    .author-name {
-        font-weight: 600;
-    }
-    .post-date {
-        font-size: 0.875rem;
-        color: var(--color-text-muted);
-    }
-    .post-content {
-        margin-bottom: var(--spacing-2xl);
-    }
-    .post-footer {
-        padding: var(--spacing-lg) 0;
-        border-top: 1px solid var(--color-border);
-        border-bottom: 1px solid var(--color-border);
-        margin-bottom: var(--spacing-2xl);
-    }
-    .post-actions {
-        display: flex;
-        gap: var(--spacing-md);
-    }
-    .inline-form {
-        display: inline;
-    }
-    .action-btn {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        background: var(--color-bg);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-full);
-        color: var(--color-text-secondary);
-        font-size: 0.9375rem;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-    .action-btn:hover {
-        background: var(--color-bg-hover);
-        color: var(--color-text);
-    }
-    .action-btn.active {
-        color: var(--color-danger);
-        border-color: var(--color-danger);
-    }
-    .action-btn.active i {
-        color: var(--color-danger);
-    }
-    .comments-section {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-    }
-    .comment-form {
-        margin-bottom: var(--spacing-xl);
-    }
-    .comments-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-md);
-    }
-    .comment-header {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-sm);
-    }
-    .comment-author {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        color: var(--color-text);
-    }
-    .comment-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: var(--radius-full);
-    }
-    .comment-author-name {
-        font-weight: 500;
-    }
-    .comment-date {
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-    }
-    .comment-edited {
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-        font-style: italic;
-    }
-    .comment-content {
-        font-size: 0.9375rem;
-        line-height: 1.6;
-    }
-    .comment-replies {
-        margin-top: var(--spacing-md);
-        padding-left: var(--spacing-xl);
-        border-left: 2px solid var(--color-border);
-    }
-    .comment-replies .comment-item.reply {
-        background: transparent;
-        border: none;
-        padding: var(--spacing-sm) 0;
-    }
-</style>

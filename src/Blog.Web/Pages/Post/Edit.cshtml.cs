@@ -13,11 +13,13 @@ public class EditModel : PageModel
 {
     private readonly IPostService _postService;
     private readonly IImageService _imageService;
+    private readonly IConfiguration _configuration;
 
-    public EditModel(IPostService postService, IImageService imageService)
+    public EditModel(IPostService postService, IImageService imageService, IConfiguration configuration)
     {
         _postService = postService;
         _imageService = imageService;
+        _configuration = configuration;
     }
 
     [BindProperty]
@@ -102,6 +104,13 @@ public class EditModel : PageModel
             string? coverImageUrl = Input.CoverImageUrl;
             if (coverImage != null && coverImage.Length > 0)
             {
+                var maxFileSizeMB = _configuration.GetValue<long>("AppSettings:MaxUploadSizeMB");
+                if (maxFileSizeMB > 0 && coverImage.Length > maxFileSizeMB * 1024 * 1024)
+                {
+                    ErrorMessage = $"The file is too large. Maximum size is {maxFileSizeMB} MB.";
+                    return Page();
+                }
+
                 using var stream = coverImage.OpenReadStream();
                 coverImageUrl = await _imageService.UploadAsync(stream, coverImage.FileName, coverImage.ContentType);
             }

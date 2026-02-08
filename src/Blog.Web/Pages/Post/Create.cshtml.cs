@@ -13,11 +13,13 @@ public class CreateModel : PageModel
 {
     private readonly IPostService _postService;
     private readonly IImageService _imageService;
+    private readonly IConfiguration _configuration;
 
-    public CreateModel(IPostService postService, IImageService imageService)
+    public CreateModel(IPostService postService, IImageService imageService, IConfiguration configuration)
     {
         _postService = postService;
         _imageService = imageService;
+        _configuration = configuration;
     }
 
     [BindProperty]
@@ -61,12 +63,19 @@ public class CreateModel : PageModel
             string? coverImageUrl = null;
             if (coverImage != null && coverImage.Length > 0)
             {
+                var maxFileSizeMB = _configuration.GetValue<long>("AppSettings:MaxUploadSizeMB");
+                if (maxFileSizeMB > 0 && coverImage.Length > maxFileSizeMB * 1024 * 1024)
+                {
+                    ErrorMessage = $"The file is too large. Maximum size is {maxFileSizeMB} MB.";
+                    return Page();
+                }
+
                 using var stream = coverImage.OpenReadStream();
                 coverImageUrl = await _imageService.UploadAsync(stream, coverImage.FileName, coverImage.ContentType);
             }
 
-            var tags = string.IsNullOrWhiteSpace(TagsInput) 
-                ? new List<string>() 
+            var tags = string.IsNullOrWhiteSpace(TagsInput)
+                ? new List<string>()
                 : TagsInput.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)).Take(5).ToList();
 
             var createDto = new CreatePostDto
@@ -82,7 +91,7 @@ public class CreateModel : PageModel
             };
 
             var post = await _postService.CreateAsync(createDto, userId);
-            
+
             if (publish)
                 return RedirectToPage("/Post/Details", new { slug = post.Slug });
             else

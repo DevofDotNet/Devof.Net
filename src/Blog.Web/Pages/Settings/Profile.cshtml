@@ -1,0 +1,561 @@
+@page
+@model Blog.Web.Pages.Settings.ProfileModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="settings-page">
+    <div class="settings-container">
+        <h1 class="page-title">Edit Profile</h1>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="alert-success">
+                <i class="fas fa-check-circle"></i>
+                @Model.StatusMessage
+            </div>
+        }
+
+        <div class="settings-card card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <!-- Tab Navigation -->
+                    <div class="settings-tabs">
+                        <a href="/Settings/Profile" class="tab-btn active">
+                            <i class="fas fa-user"></i>
+                            Profile
+                        </a>
+                        <a href="/Settings/Account" class="tab-btn">
+                            <i class="fas fa-lock"></i>
+                            Account
+                        </a>
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="validation-errors"></div>
+
+                    <!-- Avatar Section -->
+                    <div class="avatar-section">
+                        <div class="avatar-preview">
+                            <img src="@(Model.Input.AvatarUrl ?? "/images/default-avatar.png")" alt="Profile Avatar"
+                                class="avatar-img" id="avatar-preview" />
+                            <div class="avatar-overlay">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        </div>
+                        <div class="avatar-upload-zone">
+                            <h3>Profile Picture</h3>
+                            <div class="upload-options">
+                                <div class="upload-file-wrapper">
+                                    <input type="file" asp-for="Input.AvatarFile" id="avatar-file-input"
+                                        accept="image/jpeg,image/png,image/gif" class="file-input-hidden" />
+                                    <label for="avatar-file-input" class="upload-btn">
+                                        <i class="fas fa-upload"></i>
+                                        Upload Image
+                                    </label>
+                                    <span class="file-info" id="file-info">JPG, PNG, or GIF (max 5MB)</span>
+                                </div>
+                                <div class="or-divider">
+                                    <span>OR</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Public Profile Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-user-circle"></i>
+                            Public Profile
+                        </h2>
+
+                        <div class="form-group">
+                            <label asp-for="Input.DisplayName" class="form-label">Display Name *</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input asp-for="Input.DisplayName" class="form-input" placeholder="Your display name" />
+                            </div>
+                            <span asp-validation-for="Input.DisplayName" class="form-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Bio" class="form-label">Bio</label>
+                            <div class="input-icon-wrapper textarea-wrapper">
+                                <i class="fas fa-quote-left input-icon"></i>
+                                <textarea asp-for="Input.Bio" class="form-input form-textarea"
+                                    placeholder="Tell us about yourself..." rows="3"></textarea>
+                            </div>
+                            <span class="form-hint">160 characters max</span>
+                            <span asp-validation-for="Input.Bio" class="form-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Location" class="form-label">Location</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-map-marker-alt input-icon"></i>
+                                <input asp-for="Input.Location" class="form-input" placeholder="City, Country" />
+                            </div>
+                            <span asp-validation-for="Input.Location" class="form-error"></span>
+                        </div>
+                    </div>
+
+                    <!-- Social Links Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-link"></i>
+                            Social Links
+                        </h2>
+
+                        <div class="form-group">
+                            <label asp-for="Input.WebsiteUrl" class="form-label">Website</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-globe input-icon"></i>
+                                <input asp-for="Input.WebsiteUrl" class="form-input"
+                                    placeholder="https://yourwebsite.com" />
+                            </div>
+                            <span asp-validation-for="Input.WebsiteUrl" class="form-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.GitHubUrl" class="form-label">GitHub</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fab fa-github input-icon"></i>
+                                <input asp-for="Input.GitHubUrl" class="form-input"
+                                    placeholder="https://github.com/username" />
+                            </div>
+                            <span asp-validation-for="Input.GitHubUrl" class="form-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.TwitterUrl" class="form-label">Twitter</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fab fa-twitter input-icon"></i>
+                                <input asp-for="Input.TwitterUrl" class="form-input"
+                                    placeholder="https://twitter.com/username" />
+                            </div>
+                            <span asp-validation-for="Input.TwitterUrl" class="form-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.LinkedInUrl" class="form-label">LinkedIn</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fab fa-linkedin input-icon"></i>
+                                <input asp-for="Input.LinkedInUrl" class="form-input"
+                                    placeholder="https://linkedin.com/in/username" />
+                            </div>
+                            <span asp-validation-for="Input.LinkedInUrl" class="form-error"></span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <a href="/Settings" class="btn btn-outline">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // File upload handling
+        const fileInput = document.getElementById('avatar-file-input');
+        const fileInfo = document.getElementById('file-info');
+        const avatarPreview = document.getElementById('avatar-preview');
+
+        if (fileInput && fileInfo && avatarPreview) {
+            fileInput.addEventListener('change', function () {
+                const file = this.files[0];
+
+                if (file) {
+                    // Validate file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB');
+                        this.value = '';
+                        return;
+                    }
+
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Only JPG, PNG, and GIF images are allowed');
+                        this.value = '';
+                        return;
+                    }
+
+                    // Update file info display
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    fileInfo.textContent = `${file.name} (${sizeMB}MB)`;
+                    fileInfo.style.color = 'var(--color-success)';
+
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        avatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fileInfo.textContent = 'JPG, PNG, or GIF (max 5MB)';
+                    fileInfo.style.color = '';
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .settings-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--spacing-2xl) var(--spacing-lg);
+    }
+
+    .settings-container {
+        width: 100%;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xl);
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .alert-success {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--color-success);
+        margin-bottom: var(--spacing-xl);
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .settings-tabs {
+        display: flex;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg);
+        border-bottom: 2px solid var(--color-border);
+        background: var(--color-bg);
+    }
+
+    .tab-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        background: transparent;
+        border: 2px solid transparent;
+        border-radius: var(--radius-lg);
+        color: var(--color-text-secondary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+    }
+
+    .tab-btn:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text);
+    }
+
+    .tab-btn.active {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .settings-card {
+        background: var(--color-surface);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 0;
+    }
+
+    .avatar-section {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xl);
+        padding: var(--spacing-xl);
+        background: linear-gradient(135deg, var(--color-bg-alt), var(--color-surface));
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .avatar-preview {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        cursor: pointer;
+    }
+
+    .avatar-preview:hover .avatar-overlay {
+        opacity: 1;
+    }
+
+    .avatar-overlay i {
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .avatar-upload-zone h3 {
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+    }
+
+    .upload-options {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .upload-file-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .file-input-hidden {
+        display: none;
+    }
+
+    .upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        background: var(--gradient-primary);
+        color: white;
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all var(--transition-fast);
+    }
+
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .file-info {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+
+    .or-divider {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+
+    .form-section {
+        padding: var(--spacing-xl);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-text);
+    }
+
+    .section-title i {
+        color: var(--color-primary);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: var(--spacing-md);
+        padding-left: 2.5rem;
+        background: var(--color-bg);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        font-size: 1rem;
+        color: var(--color-text);
+        transition: all var(--transition-fast);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+        padding-top: var(--spacing-md);
+    }
+
+    .textarea-wrapper .input-icon {
+        top: var(--spacing-md);
+        transform: none;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
+        width: 20px;
+        text-align: center;
+    }
+
+    .form-hint {
+        margin-top: var(--spacing-xs);
+        font-size: 0.8125rem;
+        color: var(--color-text-muted);
+    }
+
+    .form-error {
+        display: block;
+        margin-top: var(--spacing-xs);
+        color: var(--color-danger);
+        font-size: 0.8125rem;
+    }
+
+    .validation-errors {
+        background: #fee;
+        border-left: 4px solid var(--color-danger);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-danger);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: flex-end;
+        padding: var(--spacing-xl);
+        background: var(--color-bg);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        border: 2px solid transparent;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--color-text);
+        border-color: var(--color-border);
+    }
+
+    .btn-outline:hover {
+        background: var(--color-bg-hover);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .settings-page {
+            padding: var(--spacing-lg) var(--spacing-md);
+        }
+
+        .avatar-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>

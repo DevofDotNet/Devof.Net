@@ -11,6 +11,7 @@ public interface IPostRepository
     Task<IEnumerable<Post>> GetByAuthorIdAsync(string authorId, int page, int pageSize, PostStatus? status = null, CancellationToken cancellationToken = default);
     Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetByTagAsync(string tagSlug, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Post>> GetRelatedByTagsAsync(int postId, IEnumerable<int> tagIds, int count, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetTrendingAsync(int count, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> SearchAsync(string query, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
