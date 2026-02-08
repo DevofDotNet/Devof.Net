@@ -89,6 +89,18 @@ public class PostRepository : IPostRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Post>> GetRelatedByTagsAsync(int postId, IEnumerable<int> tagIds, int count, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.Status == PostStatus.Published && p.Id != postId && p.PostTags.Any(pt => tagIds.Contains(pt.TagId)))
+            .Include(p => p.Author)
+            .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+            .Include(p => p.Likes)
+            .OrderByDescending(p => p.PublishedAt)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Post>> GetTrendingAsync(int count, CancellationToken cancellationToken = default)
     {
         return await _context.Posts

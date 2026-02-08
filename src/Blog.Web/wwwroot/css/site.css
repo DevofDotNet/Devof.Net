@@ -1202,3 +1202,190 @@ img {
 .empty-state-description {
     margin-bottom: var(--spacing-lg);
 }
+
+/* ===== Post Detail Page Styles ===== */
+
+/* Post Meta Row - Author Info Layout */
+.post-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: var(--spacing-lg);
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.post-author:hover .author-name {
+    color: var(--color-primary);
+}
+
+/* Author Avatar in Post Header - Production Size (48px) */
+.post-header .author-avatar,
+.post-header .post-author img,
+.post-meta-row img.author-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    max-width: 48px !important;
+    max-height: 48px !important;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Author Info Layout */
+.author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text);
+    transition: color 0.2s ease;
+}
+
+.post-date {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+/* Comment Avatars - Smaller Size */
+.comment-avatar,
+img.comment-avatar,
+.comment-header img,
+.comment-author img,
+.comments-section .card img:first-child {
+    width: 36px !important;
+    height: 36px !important;
+    max-width: 36px !important;
+    max-height: 36px !important;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Reply avatars even smaller */
+.comment-item.reply img.comment-avatar,
+.comment-item.reply .comment-author img,
+.comment-replies img {
+    width: 28px !important;
+    height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    min-width: 28px;
+    min-height: 28px;
+}
+
+/* Comment Header Layout */
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.comment-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Action Buttons - Pill Style */
+.post-footer .action-btn,
+.post-actions-left .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.post-footer .action-btn:hover,
+.post-actions-left .action-btn:hover {
+    background: var(--color-bg-hover);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.post-footer .action-btn.active,
+.post-actions-left .action-btn.active {
+    color: #ef4444;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.action-btn i {
+    font-size: 1rem;
+}
+
+/* Code Block Wrapper */
+.code-block-wrapper {
+    position: relative;
+    margin-bottom: var(--spacing-lg);
+}
+
+.code-block-wrapper pre {
+    margin: 0 !important;
+    border-radius: var(--radius-lg);
+    padding-top: 2.5rem !important;
+}
+
+/* Code Language Label */
+.code-lang-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.15);
+    color: #a0aec0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-lg) 0 var(--radius-md) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+}
+
+/* Copy Code Button */
+.copy-code-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0aec0;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+    font-size: 0.85rem;
+}
+
+.copy-code-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.copy-code-btn.copied {
+    color: #4ade80;
+}

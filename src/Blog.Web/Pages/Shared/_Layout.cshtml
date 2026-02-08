@@ -26,14 +26,14 @@
     <link rel="alternate" type="application/rss+xml" title="Devof.NET RSS Feed" href="/feed.xml" />
 
     <title>@ViewData["Title"] - Devof.NET | .NET Developer Community</title>
-    
+
     @if (ViewData["Robots"] != null)
     {
-        <meta name="robots" content="@ViewData["Robots"]" />
+                <meta name="robots" content="@ViewData["Robots"]" />
     }
     else
     {
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+                <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     }
     <meta name="description"
         content="@(ViewData["MetaDescription"] ?? "Devof.NET - The premier community for .NET developers. Learn C#, ASP.NET Core, Blazor, and modern web development through tutorials, articles, and expert insights.")" />
@@ -105,13 +105,13 @@
         var gaId = Configuration?["GoogleAnalytics:MeasurementId"];
         if (!string.IsNullOrEmpty(gaId))
         {
-            <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag() { dataLayer.push(arguments); }
-                gtag('js', new Date());
-                gtag('config', '@gaId');
-            </script>
+                            <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
+                            <script>
+                                window.dataLayer = window.dataLayer || [];
+                                function gtag() { dataLayer.push(arguments); }
+                                gtag('js', new Date());
+                                gtag('config', '@gaId');
+                            </script>
         }
     }
 
@@ -156,46 +156,46 @@
                 <div class="navbar-right">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a href="/Post/Create" class="btn btn-primary btn-create">
-                            <i class="fas fa-pen"></i>
-                            <span>Create Post</span>
-                        </a>
-                        <div class="dropdown">
-                            <button class="dropdown-toggle user-menu" id="userDropdown">
-                                <img src="@(User.FindFirst("AvatarUrl")?.Value ?? "/images/default-avatar.png")"
-                                    alt="@User.Identity.Name" class="user-avatar" />
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" id="userDropdownMenu">
-                                <a href="/Author/@User.Identity.Name" class="dropdown-item">
-                                    <i class="fas fa-user"></i> Profile
+                                <a href="/Post/Create" class="btn btn-primary btn-create">
+                                    <i class="fas fa-pen"></i>
+                                    <span>Create Post</span>
                                 </a>
-                                <a href="/Settings/Bookmarks" class="dropdown-item">
-                                    <i class="fas fa-bookmark"></i> Bookmarks
-                                </a>
-                                <a href="/Settings" class="dropdown-item">
-                                    <i class="fas fa-cog"></i> Settings
-                                </a>
+                                <div class="dropdown">
+                                    <button class="dropdown-toggle user-menu" id="userDropdown">
+                                        <img src="@(User.FindFirst("AvatarUrl")?.Value ?? "/images/default-avatar.png")"
+                                            alt="@User.Identity.Name" class="user-avatar" />
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" id="userDropdownMenu">
+                                        <a href="/Author/@User.Identity.Name" class="dropdown-item">
+                                            <i class="fas fa-user"></i> Profile
+                                        </a>
+                                        <a href="/Settings/Bookmarks" class="dropdown-item">
+                                            <i class="fas fa-bookmark"></i> Bookmarks
+                                        </a>
+                                        <a href="/Settings/Profile" class="dropdown-item">
+                                            <i class="fas fa-cog"></i> Settings
+                                        </a>
                                 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                                 {
-                                    <hr class="dropdown-divider" />
-                                    <a href="/Admin" class="dropdown-item">
-                                        <i class="fas fa-shield-alt"></i> Admin Panel
-                                    </a>
+                                                    <hr class="dropdown-divider" />
+                                                    <a href="/Admin" class="dropdown-item">
+                                                        <i class="fas fa-shield-alt"></i> Admin Panel
+                                                    </a>
                                 }
-                                <hr class="dropdown-divider" />
-                                <form method="post" asp-page="/Account/Logout">
+                                        <hr class="dropdown-divider" />
+                                        <form method="post" asp-page="/Account/Logout">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt"></i> Logout
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                     }
                     else
                     {
-                        <a href="/Account/Login" class="btn btn-outline">Login</a>
-                        <a href="/Account/Register" class="btn btn-primary">Sign Up</a>
+                                <a href="/Account/Login" class="btn btn-outline">Login</a>
+                                <a href="/Account/Register" class="btn btn-primary">Sign Up</a>
                     }
                     <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
                         <i class="fas fa-moon"></i>
@@ -246,6 +246,7 @@
         </footer>
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         // Newsletter subscription
@@ -255,10 +256,10 @@
             const btn = form.querySelector('button');
             const hint = form.nextElementSibling;
             const originalHtml = btn.innerHTML;
-            
+
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             btn.disabled = true;
-            
+
             try {
                 const formData = new FormData(form);
                 const response = await fetch('/api/newsletter/subscribe', {
@@ -266,7 +267,7 @@
                     body: formData
                 });
                 const result = await response.json();
-                
+
                 if (result.success) {
                     hint.textContent = result.message;
                     hint.style.color = 'var(--color-success)';
@@ -279,7 +280,7 @@
                 hint.textContent = 'Something went wrong. Please try again.';
                 hint.style.color = 'var(--color-danger)';
             }
-            
+
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         });

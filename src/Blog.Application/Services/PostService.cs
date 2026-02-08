@@ -14,6 +14,7 @@ public interface IPostService
     Task<List<PostDto>> GetTrendingAsync(int count, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<PagedResult<PostDto>> GetByTagAsync(string tagSlug, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<PagedResult<PostDto>> SearchAsync(string query, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default);
+    Task<List<PostDto>> GetRelatedAsync(int postId, int count, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<PagedResult<PostDto>> GetByAuthorAsync(string authorId, int page, int pageSize, PostStatus? status = null, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<PagedResult<PostDto>> GetBookmarkedPostsAsync(int page, int pageSize, string userId, CancellationToken cancellationToken = default);
     Task<PostDetailDto> CreateAsync(CreatePostDto dto, string authorId, CancellationToken cancellationToken = default);
@@ -113,6 +114,25 @@ public class PostService : IPostService
             Page = page,
             PageSize = pageSize
         };
+    }
+
+    public async Task<List<PostDto>> GetRelatedAsync(int postId, int count, string? currentUserId = null, CancellationToken cancellationToken = default)
+    {
+        // Get the post first to know its tags
+        var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
+        if (post == null || !post.PostTags.Any())
+            return new List<PostDto>();
+
+        var tagIds = post.PostTags.Select(pt => pt.TagId).ToList();
+        var relatedPosts = await _unitOfWork.Posts.GetRelatedByTagsAsync(postId, tagIds, count, cancellationToken);
+
+        var result = new List<PostDto>();
+        foreach (var related in relatedPosts)
+        {
+            result.Add(await MapToDtoAsync(related, currentUserId, cancellationToken));
+        }
+
+        return result;
     }
 
     public async Task<PagedResult<PostDto>> GetByAuthorAsync(string authorId, int page, int pageSize, PostStatus? status = null, string? currentUserId = null, CancellationToken cancellationToken = default)

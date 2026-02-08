@@ -24,6 +24,7 @@ public class DetailsModel : PageModel
 
     public PostDetailDto? Post { get; set; }
     public List<CommentDto> Comments { get; set; } = new();
+    public List<PostDto> RelatedPosts { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(string slug)
     {
@@ -36,7 +37,9 @@ public class DetailsModel : PageModel
         // Increment view count
         await _postService.IncrementViewAsync(Post.Id);
 
-        Comments = await _commentService.GetByPostIdAsync(Post.Id);
+        Comments = (await _commentService.GetByPostIdAsync(Post.Id)).ToList();
+        RelatedPosts = await _postService.GetRelatedAsync(Post.Id, 3, userId);
+
         return Page();
     }
 

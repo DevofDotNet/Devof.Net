@@ -94,20 +94,28 @@ public class RegisterModel : PageModel
 
                 if (callbackUrl != null)
                 {
-                    var emailSent = await _emailService.SendEmailVerificationAsync(
-                        user.Email!,
-                        user.UserName!,
-                        callbackUrl);
+                    try
+                    {
+                        var emailSent = await _emailService.SendEmailVerificationAsync(
+                            user.Email!,
+                            user.UserName!,
+                            callbackUrl);
 
-                    if (emailSent)
-                    {
-                        SuccessMessage = "Registration successful! Please check your email to confirm your account.";
-                        _logger.LogInformation("Verification email sent to {Email}", user.Email);
+                        if (emailSent)
+                        {
+                            SuccessMessage = "Registration successful! Please check your email to confirm your account.";
+                            _logger.LogInformation("Verification email sent to {Email}", user.Email);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to send verification email to {Email}", user.Email);
+                            SuccessMessage = "Registration successful! However, we couldn't send the verification email. Please contact support or try to resend the verification email from your account settings.";
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        _logger.LogWarning("Failed to send verification email to {Email}", user.Email);
-                        SuccessMessage = "Registration successful! However, we couldn't send the verification email. Please contact support.";
+                        _logger.LogError(ex, "Exception while sending verification email to {Email}", user.Email);
+                        SuccessMessage = $"Registration successful! However, there was an error sending the verification email: {ex.Message}. Please contact support.";
                     }
                 }
 
