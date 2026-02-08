@@ -20,28 +20,26 @@
             <div class="card-body">
                 <!-- Tab Navigation -->
                 <div class="settings-tabs">
-                    <button class="tab-btn active" data-tab="profile">
+                    <button class="tab-btn @(Model.ActiveTab == "profile" ? "active" : "")" data-tab="profile">
                         <i class="fas fa-user"></i>
                         Profile
                     </button>
-                    <button class="tab-btn" data-tab="account" title="Coming soon">
+                    <button class="tab-btn @(Model.ActiveTab == "account" ? "active" : "")" data-tab="account">
                         <i class="fas fa-lock"></i>
                         Account
                     </button>
                 </div>
 
                 <!-- Profile Tab Content -->
-                <div class="tab-content active" id="profile-tab">
-                    <form method="post" enctype="multipart/form-data">
+                <div class="tab-content @(Model.ActiveTab == "profile" ? "active" : "")" id="profile-tab">
+                    <form method="post" enctype="multipart/form-data" asp-page-handler="UpdateProfile">
                         <div asp-validation-summary="ModelOnly" class="validation-errors"></div>
 
-                        <!-- Avatar Upload Section -->
+                        <!-- ... (Avatar Section - matches existing structure) ... -->
                         <div class="avatar-section">
                             <div class="avatar-preview">
-                                <img src="@(Model.Input.AvatarUrl ?? "/images/default-avatar.png")" 
-                                     alt="Profile Avatar" 
-                                     class="avatar-img" 
-                                     id="avatar-preview" />
+                                <img src="@(Model.Input.AvatarUrl ?? "/images/default-avatar.png")" alt="Profile Avatar"
+                                    class="avatar-img" id="avatar-preview" />
                                 <div class="avatar-overlay">
                                     <i class="fas fa-camera"></i>
                                 </div>
@@ -49,20 +47,15 @@
                             <div class="avatar-upload-zone">
                                 <h3>Profile Picture</h3>
                                 <div class="upload-options">
-                                    <!-- File Upload -->
                                     <div class="upload-file-wrapper">
-                                        <input type="file" 
-                                               asp-for="Input.AvatarFile" 
-                                               id="avatar-file-input" 
-                                               accept="image/jpeg,image/png,image/gif"
-                                               class="file-input-hidden" />
+                                        <input type="file" asp-for="Input.AvatarFile" id="avatar-file-input"
+                                            accept="image/jpeg,image/png,image/gif" class="file-input-hidden" />
                                         <label for="avatar-file-input" class="upload-btn">
                                             <i class="fas fa-upload"></i>
                                             Upload Image
                                         </label>
                                         <span class="file-info" id="file-info">JPG, PNG, or GIF (max 5MB)</span>
                                     </div>
-                                    <!-- OR Divider -->
                                     <div class="or-divider">
                                         <span>OR</span>
                                     </div>
@@ -173,13 +166,66 @@
                     </form>
                 </div>
 
-                <!-- Account Tab Content (Placeholder) -->
-                <div class="tab-content" id="account-tab">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔒</div>
-                        <h3 class="empty-state-title">Coming Soon</h3>
-                        <p class="empty-state-description">Account security settings will be available soon.</p>
-                    </div>
+                <!-- Account Tab Content -->
+                <div class="tab-content @(Model.ActiveTab == "account" ? "active" : "")" id="account-tab">
+                    <form method="post" asp-page-handler="ChangePassword">
+                        <div asp-validation-summary="ModelOnly" class="validation-errors"></div>
+
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-lock"></i>
+                                Security
+                            </h2>
+
+                            @if (Model.HasPassword)
+                            {
+                                <div class="form-group">
+                                    <label asp-for="ChangePasswordInput.OldPassword" class="form-label">Current
+                                        Password</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-key input-icon"></i>
+                                        <input asp-for="ChangePasswordInput.OldPassword" class="form-input" />
+                                    </div>
+                                    <span asp-validation-for="ChangePasswordInput.OldPassword" class="form-error"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert-info" style="margin-bottom: var(--spacing-lg);">
+                                    <i class="fas fa-info-circle"></i>
+                                    You have not set a local password specifically for this site because you utilize an
+                                    external login. You can set one here.
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="ChangePasswordInput.NewPassword" class="form-label">New Password</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <input asp-for="ChangePasswordInput.NewPassword" class="form-input" />
+                                </div>
+                                <span asp-validation-for="ChangePasswordInput.NewPassword" class="form-error"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="ChangePasswordInput.ConfirmPassword" class="form-label">Confirm New
+                                    Password</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-check-circle input-icon"></i>
+                                    <input asp-for="ChangePasswordInput.ConfirmPassword" class="form-input" />
+                                </div>
+                                <span asp-validation-for="ChangePasswordInput.ConfirmPassword"
+                                    class="form-error"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                @(Model.HasPassword ? "Change Password" : "Set Password")
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -230,9 +276,9 @@
         const fileInfo = document.getElementById('file-info');
 
         if (fileInput && fileInfo && avatarPreview) {
-            fileInput.addEventListener('change', function() {
+            fileInput.addEventListener('change', function () {
                 const file = this.files[0];
-                
+
                 if (file) {
                     // Validate file size (5MB)
                     if (file.size > 5 * 1024 * 1024) {
@@ -256,7 +302,7 @@
 
                     // Preview image
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         avatarPreview.src = e.target.result;
                     };
                     reader.readAsDataURL(file);
