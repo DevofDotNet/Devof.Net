@@ -101,10 +101,10 @@ else
                     @if (canEdit)
                     {
                         <div class="post-admin-actions">
-                            <a asp-page="/Post/Edit" asp-route-id="@Model.Post.Id" class="btn btn-sm btn-outline">
+                            <a asp-page="/Post/Edit" asp-route-slug="@Model.Post.Slug" class="btn btn-sm btn-outline">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
-                            <form method="post" asp-page="/Post/Edit" asp-page-handler="Delete" asp-route-id="@Model.Post.Id"
+                            <form method="post" asp-page="/Post/Edit" asp-page-handler="Delete" asp-route-slug="@Model.Post.Slug"
                                 onsubmit="return confirm('Are you sure you want to delete this post?');"
                                 style="display:inline;">
                                 @Html.AntiForgeryToken()
