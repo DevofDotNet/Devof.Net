@@ -120,15 +120,33 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreatePostValidator>();
 builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.User.Identity?.Name ?? context.Request.Headers.Host.ToString(),
+    {
+        // Get identifier: username, or IP address, or fallback
+        string partitionKey;
+        if (context.User.Identity?.Name != null)
+        {
+            partitionKey = context.User.Identity.Name;
+        }
+        else if (context.Connection.RemoteIpAddress != null)
+        {
+            partitionKey = context.Connection.RemoteIpAddress.ToString();
+        }
+        else
+        {
+            // Final fallback - use a constant to avoid rate limit bypass
+            partitionKey = "anonymous:" + (context.Request.Headers.Host.FirstOrDefault() ?? "unknown");
+        }
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: partitionKey,
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
                 PermitLimit = 100,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
-            }));
+            });
+    });
 
     options.OnRejected = async (context, token) =>
     {
