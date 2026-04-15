@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "${DB_CONNECTION_STRING}"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=DevofNET;User=root;Password=YOUR_PASSWORD;CharSet=utf8mb4"
   },
   "AppSettings": {
     "SiteUrl": "https://localhost:5001"
