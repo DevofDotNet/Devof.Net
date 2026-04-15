@@ -26,6 +26,13 @@ public class DebugUserModel : PageModel
 
     public async Task OnGetAsync()
     {
+        // Only allow access in Development environment
+        if (!HttpContext.Request.IsLocal && !IsDevelopmentEnvironment())
+        {
+            Response.StatusCode = 403;
+            return;
+        }
+
         if (!string.IsNullOrEmpty(Email))
         {
             TargetUser = await _userManager.FindByEmailAsync(Email);
@@ -34,5 +41,10 @@ public class DebugUserModel : PageModel
                 Roles = await _userManager.GetRolesAsync(TargetUser);
             }
         }
+    }
+
+    private bool IsDevelopmentEnvironment()
+    {
+        return Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
     }
 }
