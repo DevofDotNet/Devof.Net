@@ -48,10 +48,10 @@ public class AnalyticsService : IAnalyticsService
     {
         var totalPosts = await _unitOfWork.Posts.GetCountByAuthorIdAsync(authorId, cancellationToken: cancellationToken);
         var publishedPosts = await _unitOfWork.Posts.GetCountByAuthorIdAsync(authorId, Domain.Enums.PostStatus.Published, cancellationToken);
-        var posts = await _unitOfWork.Posts.GetByAuthorIdAsync(authorId, 1, 1000, cancellationToken: cancellationToken);
 
-        var totalViews = posts.Sum(p => p.ViewCount);
-        var totalLikes = posts.Sum(p => p.Likes.Count);
+        // Use aggregate queries instead of loading all posts
+        var totalViews = await _unitOfWork.Posts.GetTotalViewsByAuthorAsync(authorId, cancellationToken);
+        var totalLikes = await _unitOfWork.Posts.GetTotalLikesByAuthorAsync(authorId, cancellationToken);
         var followerCount = await _unitOfWork.Follows.GetFollowerCountAsync(authorId, cancellationToken);
 
         return new AuthorStatsDto

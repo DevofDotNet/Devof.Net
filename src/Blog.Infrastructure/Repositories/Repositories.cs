@@ -172,6 +172,21 @@ public class PostRepository : IPostRepository
             .Where(p => p.Id == postId)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.ViewCount, p => p.ViewCount + 1), cancellationToken);
     }
+
+    public async Task<int> GetTotalViewsByAuthorAsync(string authorId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.AuthorId == authorId)
+            .SumAsync(p => p.ViewCount, cancellationToken);
+    }
+
+    public async Task<int> GetTotalLikesByAuthorAsync(string authorId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.AuthorId == authorId)
+            .SelectMany(p => p.Likes)
+            .CountAsync(cancellationToken);
+    }
 }
 
 public class TagRepository : ITagRepository
