@@ -27,6 +27,7 @@ jobs:
         source: "out/**"
         target: "/var/www/devof.net"
         strip_components: 1
+        overwrite: true
 
     - name: Restart Devof Service
       uses: appleboy/ssh-action@v1.0.3
