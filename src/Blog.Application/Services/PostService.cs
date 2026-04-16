@@ -83,6 +83,7 @@ public class PostService : IPostService
     public async Task<PagedResult<PostDto>> GetByTagAsync(string tagSlug, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var posts = await _unitOfWork.Posts.GetByTagAsync(tagSlug, page, pageSize, cancellationToken);
+        var totalCount = await _unitOfWork.Posts.GetCountByTagAsync(tagSlug, cancellationToken);
         var items = new List<PostDto>();
         foreach (var post in posts)
         {
@@ -92,7 +93,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = (page - 1) * pageSize + items.Count, // Approximate using page calc
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         };
@@ -101,6 +102,7 @@ public class PostService : IPostService
     public async Task<PagedResult<PostDto>> SearchAsync(string query, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var posts = await _unitOfWork.Posts.SearchAsync(query, page, pageSize, cancellationToken);
+        var totalCount = await _unitOfWork.Posts.GetSearchCountAsync(query, cancellationToken);
         var items = new List<PostDto>();
         foreach (var post in posts)
         {
@@ -110,7 +112,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = page == 1 ? items.Count : (page - 1) * pageSize + items.Count,
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         };

@@ -89,6 +89,13 @@ public class PostRepository : IPostRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<int> GetCountByTagAsync(string tagSlug, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.Status == PostStatus.Published && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug))
+            .CountAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Post>> GetRelatedByTagsAsync(int postId, IEnumerable<int> tagIds, int count, CancellationToken cancellationToken = default)
     {
         return await _context.Posts
@@ -127,6 +134,16 @@ public class PostRepository : IPostRepository
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetSearchCountAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var searchQuery = $"%{query}%";
+        return await _context.Posts
+            .Where(p => p.Status == PostStatus.Published &&
+                       (EF.Functions.Like(p.Title, searchQuery) ||
+                        EF.Functions.Like(p.Content, searchQuery)))
+            .CountAsync(cancellationToken);
     }
 
     public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
