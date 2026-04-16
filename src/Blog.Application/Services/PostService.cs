@@ -92,7 +92,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = items.Count, // Approximate - should ideally have a separate count query
+            TotalCount = (page - 1) * pageSize + items.Count, // Approximate using page calc
             Page = page,
             PageSize = pageSize
         };
@@ -110,7 +110,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = items.Count,
+            TotalCount = page == 1 ? items.Count : (page - 1) * pageSize + items.Count,
             Page = page,
             PageSize = pageSize
         };
