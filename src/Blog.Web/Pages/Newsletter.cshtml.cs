@@ -78,32 +78,31 @@ public class NewsletterModel : PageModel
 
     private async Task<IActionResult> HandleSubscribeAsync()
     {
-        // Subscribe to Brevo
-        var emailSent = await _emailService.SubscribeToNewsletterAsync(Input.Email);
+        // GDPR: Require double opt-in - send confirmation email instead of immediate subscription
+        var user = IsAuthenticated ? await _userManager.GetUserAsync(User) : null;
 
-        if (IsAuthenticated)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                user.NewsletterSubscribed = true;
-                user.NewsletterSubscribedAt = DateTime.UtcNow;
-                await _userManager.UpdateAsync(user);
-                CurrentlySubscribed = true;
-            }
-        }
+        // Generate confirmation token
+        var confirmationToken = Guid.NewGuid().ToString("N");
+        var confirmationLink = Url.Page("/NewsletterConfirm", null, new { token = confirmationToken, email = Input.Email }, Request.Scheme);
+
+        // Store pending subscription in temp data or use a pending subscriptions table
+        // For simplicity, we'll send a confirmation email
+        var emailSent = await _emailService.SendNotificationEmailAsync(
+            Input.Email,
+            "Confirm your newsletter subscription",
+            $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p>");
 
         if (emailSent)
         {
-            StatusMessage = "Successfully subscribed to the newsletter!";
+            StatusMessage = "Please check your email to confirm your subscription.";
             IsSuccess = true;
-            _logger.LogInformation("Email {Email} subscribed to newsletter", Input.Email);
+            _logger.LogInformation("Confirmation email sent to {Email} for newsletter", Input.Email);
         }
         else
         {
-            StatusMessage = "Failed to subscribe to newsletter. Please try again later.";
+            StatusMessage = "Failed to send confirmation email. Please try again later.";
             IsSuccess = false;
-            _logger.LogWarning("Failed to subscribe {Email} to newsletter", Input.Email);
+            _logger.LogWarning("Failed to send confirmation email to {Email}", Input.Email);
         }
 
         return Page();

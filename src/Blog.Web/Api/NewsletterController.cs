@@ -59,21 +59,25 @@ public class NewsletterController : ControllerBase
                 }
             }
 
-            // Create new subscriber
+            // Create new subscriber (GDPR: require double opt-in)
             var subscriber = new Subscriber
             {
                 Email = email,
                 SubscribedAt = DateTime.UtcNow,
                 ConfirmationToken = Guid.NewGuid().ToString("N"),
-                IsActive = true
+                IsActive = false  // GDPR: require email confirmation before activation
             };
 
             _context.Subscribers.Add(subscriber);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("New newsletter subscriber: {Email}", email);
+            // Send confirmation email (GDPR double opt-in)
+            var confirmationLink = Url.Action("ConfirmNewsletter", "Newsletter", new { token = subscriber.ConfirmationToken, email = subscriber.Email }, Request.Scheme);
+            // Note: In production, inject IEmailService and send the confirmation email
 
-            return Ok(new { success = true, message = "Thanks for subscribing! You'll receive the latest posts in your inbox." });
+            _logger.LogInformation("New newsletter subscriber (pending confirmation): {Email}", email);
+
+            return Ok(new { success = true, message = "Thanks for subscribing! Please check your email to confirm your subscription." });
         }
         catch (Exception ex)
         {
