@@ -96,12 +96,20 @@ public class NewsletterController : ControllerBase
 
         email = email.Trim().ToLowerInvariant();
 
+        // First check if any subscriber exists (regardless of IsActive status)
         var subscriber = await _context.Subscribers
-            .FirstOrDefaultAsync(s => s.Email == email && s.IsActive);
+            .FirstOrDefaultAsync(s => s.Email == email);
 
         if (subscriber == null)
         {
+            // No subscriber found - but return success to avoid revealing if email is subscribed
             return Ok(new { success = true, message = "You have been unsubscribed." });
+        }
+
+        if (!subscriber.IsActive)
+        {
+            // Already unsubscribed
+            return Ok(new { success = true, message = "You are not currently subscribed." });
         }
 
         subscriber.IsActive = false;
