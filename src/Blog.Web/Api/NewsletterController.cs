@@ -190,7 +190,7 @@ public class NewsletterController : ControllerBase
 
         try
         {
-            await _emailService.SendEmailAsync(subscriber.Email, subject, body);
+            await _emailService.SendNotificationEmailAsync(subscriber.Email, subject, body);
             _logger.LogInformation("Confirmation email sent to: {Email}", subscriber.Email);
         }
         catch (Exception ex)
