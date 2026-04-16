@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Blog.Web.Pages.Admin;
@@ -26,8 +27,8 @@ public class DebugUserModel : PageModel
 
     public async Task OnGetAsync()
     {
-        // Only allow access in Development environment
-        if (!HttpContext.Request.IsLocal && !IsDevelopmentEnvironment())
+        // Only allow access in Development environment or local requests
+        if (!IsLocalRequest() && !IsDevelopmentEnvironment())
         {
             Response.StatusCode = 403;
             return;
@@ -41,6 +42,15 @@ public class DebugUserModel : PageModel
                 Roles = await _userManager.GetRolesAsync(TargetUser);
             }
         }
+    }
+
+    private bool IsLocalRequest()
+    {
+        var connection = HttpContext.Connection;
+        if (connection.RemoteIpAddress == null) return true;
+        if (connection.RemoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            return IPAddress.IsLoopback(connection.RemoteIpAddress);
+        return false;
     }
 
     private bool IsDevelopmentEnvironment()
