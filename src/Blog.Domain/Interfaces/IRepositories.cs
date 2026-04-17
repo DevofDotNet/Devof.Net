@@ -7,6 +7,7 @@ public interface IPostRepository
 {
     Task<Post?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<Post?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Post>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetAllPublishedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetByAuthorIdAsync(string authorId, int page, int pageSize, PostStatus? status = null, CancellationToken cancellationToken = default);
     Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default);
