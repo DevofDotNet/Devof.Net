@@ -199,15 +199,16 @@ public class NewsletterController : ControllerBase
         }
     }
 
-    private static bool IsValidEmail(string email)
+    private bool IsValidEmail(string email)
     {
         try
         {
             var addr = new System.Net.Mail.MailAddress(email);
             return addr.Address == email;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Invalid email format: {Email}", email);
             return false;
         }
     }
