@@ -394,9 +394,9 @@ public class PostService : IPostService
             IsLiked = isLiked,
             IsBookmarked = isBookmarked,
             Author = MapUserToDto(post.Author),
-            Tags = post.PostTags?.Select(pt => new TagDto
+            Tags = post.PostTags?.Where(pt => pt.Tag != null).Select(pt => new TagDto
             {
-                Id = pt.Tag.Id,
+                Id = pt.Tag!.Id,
                 Name = pt.Tag.Name,
                 Slug = pt.Tag.Slug,
                 Color = pt.Tag.Color
