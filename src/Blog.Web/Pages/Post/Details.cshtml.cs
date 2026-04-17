@@ -23,10 +23,10 @@ public class DetailsModel : PageModel
     }
 
     public PostDetailDto? Post { get; set; }
-    public List<CommentDto> Comments { get; set; } = new();
+    public PagedResult<CommentDto> Comments { get; set; } = new();
     public List<PostDto> RelatedPosts { get; set; } = new();
 
-    public async Task<IActionResult> OnGetAsync(string slug)
+    public async Task<IActionResult> OnGetAsync(string slug, int page = 1)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Post = await _postService.GetBySlugAsync(slug, userId);
@@ -37,7 +37,7 @@ public class DetailsModel : PageModel
         // Increment view count
         await _postService.IncrementViewAsync(Post.Id);
 
-        Comments = (await _commentService.GetByPostIdAsync(Post.Id)).ToList();
+        Comments = await _commentService.GetByPostIdAsync(Post.Id, page);
         RelatedPosts = await _postService.GetRelatedAsync(Post.Id, 3, userId);
 
         return Page();

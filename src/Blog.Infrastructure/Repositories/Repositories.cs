@@ -315,6 +315,24 @@ public class CommentRepository : ICommentRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .Where(c => c.PostId == postId && c.ParentCommentId == null && !c.IsDeleted)
+            .Include(c => c.Author)
+            .Include(c => c.Replies.Where(r => !r.IsDeleted)).ThenInclude(r => r.Author)
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .CountAsync(c => c.PostId == postId && c.ParentCommentId == null && !c.IsDeleted, cancellationToken);
+    }
+
     public async Task<IEnumerable<Comment>> GetRepliesAsync(int parentCommentId, CancellationToken cancellationToken = default)
     {
         return await _context.Comments
