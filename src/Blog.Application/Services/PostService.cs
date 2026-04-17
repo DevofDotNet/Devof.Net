@@ -83,6 +83,7 @@ public class PostService : IPostService
     public async Task<PagedResult<PostDto>> GetByTagAsync(string tagSlug, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var posts = await _unitOfWork.Posts.GetByTagAsync(tagSlug, page, pageSize, cancellationToken);
+        var totalCount = await _unitOfWork.Posts.GetCountByTagAsync(tagSlug, cancellationToken);
         var items = new List<PostDto>();
         foreach (var post in posts)
         {
@@ -92,7 +93,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = items.Count, // Approximate - should ideally have a separate count query
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         };
@@ -101,6 +102,7 @@ public class PostService : IPostService
     public async Task<PagedResult<PostDto>> SearchAsync(string query, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var posts = await _unitOfWork.Posts.SearchAsync(query, page, pageSize, cancellationToken);
+        var totalCount = await _unitOfWork.Posts.GetSearchCountAsync(query, cancellationToken);
         var items = new List<PostDto>();
         foreach (var post in posts)
         {
@@ -110,7 +112,7 @@ public class PostService : IPostService
         return new PagedResult<PostDto>
         {
             Items = items,
-            TotalCount = items.Count,
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         };
@@ -321,12 +323,27 @@ public class PostService : IPostService
         await _unitOfWork.Posts.IncrementViewCountAsync(postId, cancellationToken);
     }
 
-    public Task UpdateTrendingScoresAsync(CancellationToken cancellationToken = default)
+    public async Task UpdateTrendingScoresAsync(CancellationToken cancellationToken = default)
     {
         // Trending score algorithm: (likes × 2 + views × 0.5 + comments × 3) / (hoursAge + 2)^1.5
-        // This would typically be run as a background job
-        // For now, it's a placeholder that could be called periodically
-        return Task.CompletedTask;
+        var posts = await _unitOfWork.Posts.GetAllAsync(cancellationToken);
+        var publishedPosts = posts.Where(p => p.Status == PostStatus.Published && p.PublishedAt.HasValue).ToList();
+
+        foreach (var post in publishedPosts)
+        {
+            var hoursAge = (DateTime.UtcNow - post.PublishedAt!.Value).TotalHours;
+            var likeCount = post.Likes?.Count ?? 0;
+            var commentCount = post.Comments?.Count ?? 0;
+            var viewCount = post.ViewCount;
+
+            var score = (likeCount * 2 + viewCount * 0.5 + commentCount * 3) / Math.Pow(hoursAge + 2, 1.5);
+            post.TrendingScore = double.IsFinite(score) ? score : 0;
+            post.TrendingScoreUpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Posts.UpdateAsync(post, cancellationToken);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<string> GenerateUniqueSlugAsync(string title, int? excludeId, CancellationToken cancellationToken)
@@ -377,9 +394,9 @@ public class PostService : IPostService
             IsLiked = isLiked,
             IsBookmarked = isBookmarked,
             Author = MapUserToDto(post.Author),
-            Tags = post.PostTags?.Select(pt => new TagDto
+            Tags = post.PostTags?.Where(pt => pt.Tag != null).Select(pt => new TagDto
             {
-                Id = pt.Tag.Id,
+                Id = pt.Tag!.Id,
                 Name = pt.Tag.Name,
                 Slug = pt.Tag.Slug,
                 Color = pt.Tag.Color

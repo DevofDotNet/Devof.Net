@@ -32,7 +32,16 @@ public class PostRepository : IPostRepository
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
             .Include(p => p.Likes)
             .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
             .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Post>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Post>> GetAllPublishedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
@@ -89,6 +98,13 @@ public class PostRepository : IPostRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<int> GetCountByTagAsync(string tagSlug, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.Status == PostStatus.Published && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug))
+            .CountAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Post>> GetRelatedByTagsAsync(int postId, IEnumerable<int> tagIds, int count, CancellationToken cancellationToken = default)
     {
         return await _context.Posts
@@ -127,6 +143,16 @@ public class PostRepository : IPostRepository
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetSearchCountAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var searchQuery = $"%{query}%";
+        return await _context.Posts
+            .Where(p => p.Status == PostStatus.Published &&
+                       (EF.Functions.Like(p.Title, searchQuery) ||
+                        EF.Functions.Like(p.Content, searchQuery)))
+            .CountAsync(cancellationToken);
     }
 
     public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
@@ -171,6 +197,21 @@ public class PostRepository : IPostRepository
         await _context.Posts
             .Where(p => p.Id == postId)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.ViewCount, p => p.ViewCount + 1), cancellationToken);
+    }
+
+    public async Task<int> GetTotalViewsByAuthorAsync(string authorId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.AuthorId == authorId)
+            .SumAsync(p => p.ViewCount, cancellationToken);
+    }
+
+    public async Task<int> GetTotalLikesByAuthorAsync(string authorId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Where(p => p.AuthorId == authorId)
+            .SelectMany(p => p.Likes)
+            .CountAsync(cancellationToken);
     }
 }
 
@@ -287,6 +328,24 @@ public class CommentRepository : ICommentRepository
             .Include(c => c.Replies.Where(r => !r.IsDeleted)).ThenInclude(r => r.Author)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .Where(c => c.PostId == postId && c.ParentCommentId == null && !c.IsDeleted)
+            .Include(c => c.Author)
+            .Include(c => c.Replies.Where(r => !r.IsDeleted)).ThenInclude(r => r.Author)
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Comments
+            .CountAsync(c => c.PostId == postId && c.ParentCommentId == null && !c.IsDeleted, cancellationToken);
     }
 
     public async Task<IEnumerable<Comment>> GetRepliesAsync(int parentCommentId, CancellationToken cancellationToken = default)

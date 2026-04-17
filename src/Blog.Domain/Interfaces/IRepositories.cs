@@ -7,13 +7,16 @@ public interface IPostRepository
 {
     Task<Post?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<Post?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Post>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetAllPublishedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetByAuthorIdAsync(string authorId, int page, int pageSize, PostStatus? status = null, CancellationToken cancellationToken = default);
     Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetByTagAsync(string tagSlug, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetCountByTagAsync(string tagSlug, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetRelatedByTagsAsync(int postId, IEnumerable<int> tagIds, int count, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> GetTrendingAsync(int count, CancellationToken cancellationToken = default);
     Task<IEnumerable<Post>> SearchAsync(string query, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetSearchCountAsync(string query, CancellationToken cancellationToken = default);
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
     Task<int> CountPublishedAsync(CancellationToken cancellationToken = default);
     Task<Post> AddAsync(Post post, CancellationToken cancellationToken = default);
@@ -21,6 +24,8 @@ public interface IPostRepository
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
     Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default);
     Task IncrementViewCountAsync(int postId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalViewsByAuthorAsync(string authorId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalLikesByAuthorAsync(string authorId, CancellationToken cancellationToken = default);
 }
 
 public interface ITagRepository
@@ -40,6 +45,8 @@ public interface ICommentRepository
 {
     Task<Comment?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Comment>> GetRepliesAsync(int parentCommentId, CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<Comment> AddAsync(Comment comment, CancellationToken cancellationToken = default);

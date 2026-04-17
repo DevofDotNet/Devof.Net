@@ -6,7 +6,7 @@ namespace Blog.Application.Services;
 
 public interface ICommentService
 {
-    Task<List<CommentDto>> GetByPostIdAsync(int postId, CancellationToken cancellationToken = default);
+    Task<PagedResult<CommentDto>> GetByPostIdAsync(int postId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default);
     Task<CommentDto> CreateAsync(CreateCommentDto dto, string authorId, CancellationToken cancellationToken = default);
     Task<CommentDto> UpdateAsync(int commentId, string content, string authorId, CancellationToken cancellationToken = default);
     Task DeleteAsync(int commentId, string authorId, CancellationToken cancellationToken = default);
@@ -23,10 +23,18 @@ public class CommentService : ICommentService
         _markdownService = markdownService;
     }
 
-    public async Task<List<CommentDto>> GetByPostIdAsync(int postId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<CommentDto>> GetByPostIdAsync(int postId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
-        var comments = await _unitOfWork.Comments.GetByPostIdAsync(postId, cancellationToken);
-        return comments.Select(MapToDto).ToList();
+        var totalCount = await _unitOfWork.Comments.GetCountByPostIdAsync(postId, cancellationToken);
+        var comments = await _unitOfWork.Comments.GetByPostIdAsync(postId, page, pageSize, cancellationToken);
+        
+        return new PagedResult<CommentDto>
+        {
+            Items = comments.Select(MapToDto).ToList(),
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<CommentDto> CreateAsync(CreateCommentDto dto, string authorId, CancellationToken cancellationToken = default)

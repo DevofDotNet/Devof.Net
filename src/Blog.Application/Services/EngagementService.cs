@@ -80,13 +80,14 @@ public class EngagementService : IEngagementService
     public async Task<PagedResult<PostDto>> GetBookmarkedPostsAsync(string userId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var bookmarks = await _unitOfWork.Bookmarks.GetByUserIdAsync(userId, page, pageSize, cancellationToken);
+        var totalCount = await _unitOfWork.Bookmarks.GetCountByUserIdAsync(userId, cancellationToken);
         
         return new PagedResult<PostDto>
         {
             Items = bookmarks.Select(b => MapPostToDto(b.Post, userId)).ToList(),
             Page = page,
             PageSize = pageSize,
-            TotalCount = bookmarks.Count()
+            TotalCount = totalCount
         };
     }
 
