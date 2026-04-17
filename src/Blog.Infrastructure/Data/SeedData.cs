@@ -69,9 +69,10 @@ public static class SeedData
             CreatedAt = DateTime.UtcNow.AddYears(-1)
         };
 
+        var adminPassword = Environment.GetEnvironmentVariable("SEED_ADMIN_PASSWORD") ?? "Admin@123";
         if (await userManager.FindByEmailAsync(admin.Email) == null)
         {
-            await userManager.CreateAsync(admin, "Admin@123");
+            await userManager.CreateAsync(admin, adminPassword);
             await userManager.AddToRolesAsync(admin, new[] { "Admin", "Author" });
             users.Add(admin);
         }
@@ -80,7 +81,7 @@ public static class SeedData
         {
             // Ensure password is correct
             var token = await userManager.GeneratePasswordResetTokenAsync(foundAdmin);
-            await userManager.ResetPasswordAsync(foundAdmin, token, "Admin@123");
+            await userManager.ResetPasswordAsync(foundAdmin, token, adminPassword);
             users.Add(foundAdmin);
         }
 
@@ -107,9 +108,10 @@ public static class SeedData
                 CreatedAt = DateTime.UtcNow.AddMonths(-6)
             };
 
+            var userPassword = Environment.GetEnvironmentVariable("SEED_USER_PASSWORD") ?? "User@123";
             if (await userManager.FindByEmailAsync(user.Email) == null)
             {
-                await userManager.CreateAsync(user, "User@123"); // Simple password for demo
+                await userManager.CreateAsync(user, userPassword); // Simple password for demo
                 await userManager.AddToRoleAsync(user, "Author");
                 users.Add(user);
             }
