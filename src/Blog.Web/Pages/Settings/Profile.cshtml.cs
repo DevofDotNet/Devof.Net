@@ -226,9 +226,9 @@ public class ProfileModel : PageModel
                 System.IO.File.Delete(filePath);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore deletion errors
+            _logger.LogWarning(ex, "Failed to delete old avatar file: {AvatarUrl}", avatarUrl);
         }
     }
 }
