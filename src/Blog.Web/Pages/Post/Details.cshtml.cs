@@ -103,52 +103,77 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostLikeJsonAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return new JsonResult(new { success = false, redirectUrl = $"/Account/Login?returnUrl=/post/{slug}" });
-
-        var post = await _postService.GetBySlugAsync(slug, userId);
-        if (post == null)
-            return new JsonResult(new { success = false, error = "Post not found" });
-
-        bool isLiked;
-        if (post.IsLiked)
+        try
         {
-            await _engagementService.UnlikePostAsync(post.Id, userId);
-            isLiked = false;
-        }
-        else
-        {
-            await _engagementService.LikePostAsync(post.Id, userId);
-            isLiked = true;
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return new JsonResult(new { success = false, redirectUrl = $"/Account/Login?returnUrl=/post/{slug}" }) { ContentType = "application/json" };
 
-        var newCount = isLiked ? post.LikeCount + 1 : post.LikeCount - 1;
-        return new JsonResult(new { success = true, isLiked, count = newCount });
+            var post = await _postService.GetBySlugAsync(slug, userId);
+            if (post == null)
+                return new JsonResult(new { success = false, error = "Post not found" }) { ContentType = "application/json" };
+
+            bool isLiked;
+            if (post.IsLiked)
+            {
+                var unlikeResult = await _engagementService.UnlikePostAsync(post.Id, userId);
+                isLiked = false;
+                if (!unlikeResult)
+                    return new JsonResult(new { success = false, error = "Failed to unlike post" }) { ContentType = "application/json" };
+            }
+            else
+            {
+                var likeResult = await _engagementService.LikePostAsync(post.Id, userId);
+                isLiked = true;
+                if (!likeResult)
+                    return new JsonResult(new { success = false, error = "Failed to like post" }) { ContentType = "application/json" };
+            }
+
+            // Get updated like count
+            var updatedPost = await _postService.GetBySlugAsync(slug, userId);
+            var newCount = updatedPost?.LikeCount ?? 0;
+
+            return new JsonResult(new { success = true, isLiked, count = newCount }) { ContentType = "application/json" };
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, error = "An error occurred: " + ex.Message }) { ContentType = "application/json" };
+        }
     }
 
     public async Task<IActionResult> OnPostBookmarkJsonAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return new JsonResult(new { success = false, redirectUrl = $"/Account/Login?returnUrl=/post/{slug}" });
-
-        var post = await _postService.GetBySlugAsync(slug, userId);
-        if (post == null)
-            return new JsonResult(new { success = false, error = "Post not found" });
-
-        bool isBookmarked;
-        if (post.IsBookmarked)
+        try
         {
-            await _engagementService.UnbookmarkPostAsync(post.Id, userId);
-            isBookmarked = false;
-        }
-        else
-        {
-            await _engagementService.BookmarkPostAsync(post.Id, userId);
-            isBookmarked = true;
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return new JsonResult(new { success = false, redirectUrl = $"/Account/Login?returnUrl=/post/{slug}" }) { ContentType = "application/json" };
 
-        return new JsonResult(new { success = true, isBookmarked });
+            var post = await _postService.GetBySlugAsync(slug, userId);
+            if (post == null)
+                return new JsonResult(new { success = false, error = "Post not found" }) { ContentType = "application/json" };
+
+            bool isBookmarked;
+            if (post.IsBookmarked)
+            {
+                var unbookmarkResult = await _engagementService.UnbookmarkPostAsync(post.Id, userId);
+                isBookmarked = false;
+                if (!unbookmarkResult)
+                    return new JsonResult(new { success = false, error = "Failed to remove bookmark" }) { ContentType = "application/json" };
+            }
+            else
+            {
+                var bookmarkResult = await _engagementService.BookmarkPostAsync(post.Id, userId);
+                isBookmarked = true;
+                if (!bookmarkResult)
+                    return new JsonResult(new { success = false, error = "Failed to bookmark post" }) { ContentType = "application/json" };
+            }
+
+            return new JsonResult(new { success = true, isBookmarked }) { ContentType = "application/json" };
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, error = "An error occurred: " + ex.Message }) { ContentType = "application/json" };
+        }
     }
 }
