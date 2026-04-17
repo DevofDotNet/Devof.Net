@@ -58,13 +58,22 @@ public class EditModel : PageModel
     {
         _logger.LogInformation("Edit page requested for slug: {Slug}, id: {Id}", slug, id);
         
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _logger.LogInformation("Current user ID from claims: {UserId}, IsAuthenticated: {IsAuthenticated}", 
+            userId ?? "NULL", User.Identity?.IsAuthenticated);
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("User not authenticated, redirecting to login");
+            return RedirectToPage("/Account/Login");
+        }
+
         // Support both slug (preferred) and id for backward compatibility
         string? actualSlug = slug;
         int? actualId = id;
         
         if (string.IsNullOrEmpty(actualSlug) && actualId.HasValue)
         {
-            // If id is provided but not slug, fetch the post to get the slug
             var postById = await _postService.GetByIdAsync(actualId.Value, null);
             if (postById == null)
             {
@@ -80,10 +89,8 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        _logger.LogInformation("User ID: {UserId}", userId ?? "null");
-        
-        var post = await _postService.GetBySlugAsync(actualSlug!, userId);
+        // Load post WITHOUT userId to get clean author data
+        var post = await _postService.GetBySlugAsync(actualSlug!, null);
 
         if (post == null)
         {
@@ -91,15 +98,23 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        _logger.LogInformation("Post found: {PostId}, AuthorId: {AuthorId}", post.Id, post.Author.Id);
+        _logger.LogInformation("Loaded post: {PostId}. Author ID: {AuthorId}. Current user ID: {UserId}", 
+            post.Id, post.Author?.Id ?? "NULL", userId);
+
+        // Robust authorization check with null handling
+        var isAuthor = post.Author?.Id == userId;
+        var isAdmin = User.IsInRole("Admin");
         
-        // Check if user is the author or admin
-        if (post.Author.Id != userId && !User.IsInRole("Admin"))
+        _logger.LogInformation("Authorization check: isAuthor={IsAuthor}, isAdmin={IsAdmin}", isAuthor, isAdmin);
+        
+        if (!isAuthor && !isAdmin)
         {
-            _logger.LogWarning("User {UserId} is not authorized to edit post {PostId}. Author: {AuthorId}", 
-                userId, post.Id, post.Author.Id);
+            _logger.LogWarning("User {UserId} is NOT authorized to edit post {PostId}. Author: {AuthorId}", 
+                userId, post.Id, post.Author?.Id ?? "UNKNOWN");
             return Forbid();
         }
+
+        _logger.LogInformation("User authorized to edit post: {PostId}", post.Id);
 
         PostId = post.Id;
         CurrentSlug = post.Slug;
@@ -130,23 +145,25 @@ public class EditModel : PageModel
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("User not authenticated");
+            _logger.LogWarning("User not authenticated in OnPost");
             return RedirectToPage("/Account/Login");
         }
 
         try
         {
-            // Verify ownership
-            var existingPost = await _postService.GetByIdAsync(PostId, userId);
+            var existingPost = await _postService.GetByIdAsync(PostId, null);
             if (existingPost == null)
             {
                 _logger.LogWarning("Post not found: {PostId}", PostId);
                 return NotFound();
             }
 
-            if (existingPost.Author.Id != userId && !User.IsInRole("Admin"))
+            var isAuthor = existingPost.Author?.Id == userId;
+            var isAdmin = User.IsInRole("Admin");
+            
+            if (!isAuthor && !isAdmin)
             {
-                _logger.LogWarning("User not authorized to edit post: {PostId}", PostId);
+                _logger.LogWarning("User {UserId} not authorized to edit post {PostId}", userId, PostId);
                 return Forbid();
             }
 
@@ -207,11 +224,14 @@ public class EditModel : PageModel
 
         try
         {
-            var existingPost = await _postService.GetByIdAsync(PostId, userId);
+            var existingPost = await _postService.GetByIdAsync(PostId, null);
             if (existingPost == null)
                 return NotFound();
 
-            if (existingPost.Author.Id != userId && !User.IsInRole("Admin"))
+            var isAuthor = existingPost.Author?.Id == userId;
+            var isAdmin = User.IsInRole("Admin");
+            
+            if (!isAuthor && !isAdmin)
                 return Forbid();
 
             await _postService.DeleteAsync(PostId, userId);
