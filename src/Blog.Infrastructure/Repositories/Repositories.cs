@@ -32,7 +32,16 @@ public class PostRepository : IPostRepository
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
             .Include(p => p.Likes)
             .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
             .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Post>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Post>> GetAllPublishedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
