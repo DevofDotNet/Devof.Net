@@ -18,12 +18,8 @@ public static class ClaimExtensions
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrEmpty(userId)) return userId;
         
-        // Try NameIdentifierId (used by some identity providers)
-        userId = user.FindFirstValue(ClaimTypes.NameIdentifierClaim);
-        if (!string.IsNullOrEmpty(userId)) return userId;
-        
         // Try for sub claim (common in OAuth)
-        userId = user.FindFirstValue(ClaimTypes.Subject);
+        userId = user.FindFirstValue("sub");
         if (!string.IsNullOrEmpty(userId)) return userId;
         
         // Try uid claim (used by some auth providers like Auth0)
