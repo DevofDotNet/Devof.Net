@@ -7,6 +7,33 @@ using System.Security.Claims;
 
 namespace Blog.Web.Pages.Post;
 
+public static class ClaimExtensions
+{
+    /// <summary>
+    /// Get user ID from claims - tries multiple claim types for compatibility with different auth providers
+    /// </summary>
+    public static string? GetUserId(this ClaimsPrincipal user)
+    {
+        // Try standard NameIdentifier first (typically UserManager user ID)
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(userId)) return userId;
+        
+        // Try NameIdentifierId (used by some identity providers)
+        userId = user.FindFirstValue(ClaimTypes.NameIdentifierClaim);
+        if (!string.IsNullOrEmpty(userId)) return userId;
+        
+        // Try for sub claim (common in OAuth)
+        userId = user.FindFirstValue(ClaimTypes.Subject);
+        if (!string.IsNullOrEmpty(userId)) return userId;
+        
+        // Try uid claim (used by some auth providers like Auth0)
+        userId = user.FindFirstValue("uid");
+        if (!string.IsNullOrEmpty(userId)) return userId;
+        
+        return null;
+    }
+}
+
 public class DetailsModel : PageModel
 {
     private readonly IPostService _postService;
@@ -37,7 +64,7 @@ public class DetailsModel : PageModel
     private bool IsCurrentUserAuthor()
     {
         if (Post?.Author == null) return false;
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         return !string.IsNullOrEmpty(userId) && Post.Author.Id == userId;
     }
 
@@ -47,7 +74,7 @@ public class DetailsModel : PageModel
         var postWithoutUser = await _postService.GetBySlugAsync(slug, null);
         
         // Now check if current user can edit/delete
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User.GetUserId();
         var isAuthenticated = User.Identity?.IsAuthenticated == true;
         var isAuthor = isAuthenticated && postWithoutUser?.Author?.Id == currentUserId;
         var isAdmin = User.IsInRole("Admin");
@@ -70,7 +97,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostLikeAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrEmpty(userId))
             return RedirectToPage("/Account/Login", new { returnUrl = $"/post/{slug}" });
 
@@ -88,7 +115,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostBookmarkAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrEmpty(userId))
             return RedirectToPage("/Account/Login", new { returnUrl = $"/post/{slug}" });
 
@@ -106,7 +133,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostCommentAsync(string slug, string content)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrEmpty(userId))
             return RedirectToPage("/Account/Login", new { returnUrl = $"/post/{slug}" });
 
@@ -128,7 +155,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostLikeJsonAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         _logger.LogInformation("OnPostLikeJsonAsync called for slug: {Slug}, userId: {UserId}", slug, userId ?? "null");
         
         if (string.IsNullOrEmpty(userId))
@@ -170,7 +197,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnPostBookmarkJsonAsync(string slug)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         _logger.LogInformation("OnPostBookmarkJsonAsync called for slug: {Slug}, userId: {UserId}", slug, userId ?? "null");
         
         if (string.IsNullOrEmpty(userId))
