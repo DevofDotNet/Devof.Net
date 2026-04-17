@@ -29,10 +29,31 @@ public class DetailsModel : PageModel
     public PostDetailDto? Post { get; set; }
     public PagedResult<CommentDto> Comments { get; set; } = new();
     public List<PostDto> RelatedPosts { get; set; } = new();
+    
+    // Authorization properties - calculated after Post is loaded
+    public bool CanEdit => Post != null && User.Identity?.IsAuthenticated == true && IsCurrentUserAuthor();
+    public bool CanDelete => Post != null && User.Identity?.IsAuthenticated == true && (IsCurrentUserAuthor() || User.IsInRole("Admin"));
+    
+    private bool IsCurrentUserAuthor()
+    {
+        if (Post?.Author == null) return false;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return !string.IsNullOrEmpty(userId) && Post.Author.Id == userId;
+    }
 
     public async Task<IActionResult> OnGetAsync(string slug, int page = 1)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // Load post WITHOUT userId first to get clean author data
+        var postWithoutUser = await _postService.GetBySlugAsync(slug, null);
+        
+        // Now check if current user can edit/delete
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAuthenticated = User.Identity?.IsAuthenticated == true;
+        var isAuthor = isAuthenticated && postWithoutUser?.Author?.Id == currentUserId;
+        var isAdmin = User.IsInRole("Admin");
+        
+        // Load post WITH userId for like/bookmark status
+        var userId = isAuthenticated ? currentUserId : null;
         Post = await _postService.GetBySlugAsync(slug, userId);
 
         if (Post == null)
