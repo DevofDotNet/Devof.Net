@@ -12,7 +12,7 @@
     var isAuthor = User.Identity?.IsAuthenticated == true &&
     (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.Post?.Author.Id);
     var isAdmin = User.IsInRole("Admin");
-    var canEdit = isAuthor || isAdmin;
+    var canEdit = Model.CanEdit || User.IsInRole("Admin");
 }
 
 @if (Model.Post != null)
