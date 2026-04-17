@@ -43,6 +43,8 @@ public interface ICommentRepository
 {
     Task<Comment?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Comment>> GetByPostIdAsync(int postId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetCountByPostIdAsync(int postId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Comment>> GetRepliesAsync(int parentCommentId, CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<Comment> AddAsync(Comment comment, CancellationToken cancellationToken = default);
