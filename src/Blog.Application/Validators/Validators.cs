@@ -89,18 +89,18 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
 
         RuleFor(x => x.GitHubUrl)
             .MaximumLength(200).WithMessage("GitHub URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.GitHubUrl))
-            .WithMessage("GitHub must be a valid URL");
+            .Must(BeAValidHttpsUrl).When(x => !string.IsNullOrEmpty(x.GitHubUrl))
+            .WithMessage("GitHub must be a valid HTTPS URL");
 
         RuleFor(x => x.TwitterUrl)
             .MaximumLength(200).WithMessage("Twitter URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.TwitterUrl))
-            .WithMessage("Twitter must be a valid URL");
+            .Must(BeAValidHttpsUrl).When(x => !string.IsNullOrEmpty(x.TwitterUrl))
+            .WithMessage("Twitter must be a valid HTTPS URL");
 
         RuleFor(x => x.LinkedInUrl)
             .MaximumLength(200).WithMessage("LinkedIn URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.LinkedInUrl))
-            .WithMessage("LinkedIn must be a valid URL");
+            .Must(BeAValidHttpsUrl).When(x => !string.IsNullOrEmpty(x.LinkedInUrl))
+            .WithMessage("LinkedIn must be a valid HTTPS URL");
 
         RuleFor(x => x.Location)
             .MaximumLength(100).WithMessage("Location must not exceed 100 characters");
@@ -110,6 +110,13 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
     {
         if (string.IsNullOrEmpty(url)) return true;
         return Uri.TryCreate(url, UriKind.Absolute, out _);
+    }
+
+    private static bool BeAValidHttpsUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        return uri.Scheme == Uri.UriSchemeHttps;
     }
 }
 
