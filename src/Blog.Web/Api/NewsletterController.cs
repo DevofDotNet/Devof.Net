@@ -175,7 +175,7 @@ public class NewsletterController : ControllerBase
 
     private async Task SendConfirmationEmailAsync(Subscriber subscriber)
     {
-        var confirmationLink = Url.Action("Confirm", "ApiNewsletter",
+        var confirmationLink = Url.Action("Confirm", "Newsletter",
             new { token = subscriber.ConfirmationToken, email = subscriber.Email },
             Request.Scheme);
 
