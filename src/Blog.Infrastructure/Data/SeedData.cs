@@ -69,7 +69,8 @@ public static class SeedData
             CreatedAt = DateTime.UtcNow.AddYears(-1)
         };
 
-        var adminPassword = Environment.GetEnvironmentVariable("SEED_ADMIN_PASSWORD") ?? "Admin@123";
+        var adminPassword = Environment.GetEnvironmentVariable("SEED_ADMIN_PASSWORD") 
+            ?? throw new InvalidOperationException("SEED_ADMIN_PASSWORD environment variable must be set.");
         if (await userManager.FindByEmailAsync(admin.Email) == null)
         {
             await userManager.CreateAsync(admin, adminPassword);
@@ -108,7 +109,8 @@ public static class SeedData
                 CreatedAt = DateTime.UtcNow.AddMonths(-6)
             };
 
-            var userPassword = Environment.GetEnvironmentVariable("SEED_USER_PASSWORD") ?? "User@123";
+            var userPassword = Environment.GetEnvironmentVariable("SEED_USER_PASSWORD") 
+                ?? throw new InvalidOperationException("SEED_USER_PASSWORD environment variable must be set.");
             if (await userManager.FindByEmailAsync(user.Email) == null)
             {
                 await userManager.CreateAsync(user, userPassword); // Simple password for demo
