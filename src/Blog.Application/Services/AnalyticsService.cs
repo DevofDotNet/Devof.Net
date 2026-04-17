@@ -42,6 +42,9 @@ public class AnalyticsService : IAnalyticsService
 
         await _unitOfWork.PostViews.AddAsync(postView, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Also increment the post's ViewCount for display/analytics
+        await _unitOfWork.Posts.IncrementViewCountAsync(postId, cancellationToken);
     }
 
     public async Task<AuthorStatsDto> GetAuthorStatsAsync(string authorId, CancellationToken cancellationToken = default)
