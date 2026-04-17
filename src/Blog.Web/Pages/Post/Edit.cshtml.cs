@@ -51,13 +51,26 @@ public class EditModel : PageModel
         public string? MetaKeywords { get; set; }
     }
 
-    public async Task<IActionResult> OnGetAsync(string slug)
+    public async Task<IActionResult> OnGetAsync(string? slug, int? id)
     {
-        if (string.IsNullOrEmpty(slug))
+        // Support both slug (preferred) and id for backward compatibility
+        string? actualSlug = slug;
+        int? actualId = id;
+        
+        if (string.IsNullOrEmpty(actualSlug) && actualId.HasValue)
+        {
+            // If id is provided but not slug, fetch the post to get the slug
+            var postById = await _postService.GetByIdAsync(actualId.Value, null);
+            if (postById == null)
+                return NotFound();
+            actualSlug = postById.Slug;
+        }
+
+        if (string.IsNullOrEmpty(actualSlug) && !actualId.HasValue)
             return NotFound();
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var post = await _postService.GetBySlugAsync(slug, userId);
+        var post = await _postService.GetBySlugAsync(actualSlug!, userId);
 
         if (post == null)
             return NotFound();
