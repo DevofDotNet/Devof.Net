@@ -24,6 +24,8 @@ public interface IPostRepository
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
     Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default);
     Task IncrementViewCountAsync(int postId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalViewsByAuthorAsync(string authorId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalLikesByAuthorAsync(string authorId, CancellationToken cancellationToken = default);
 }
 
 public interface ITagRepository
