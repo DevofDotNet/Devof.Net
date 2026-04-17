@@ -39,6 +39,11 @@ public class CommentService : ICommentService
 
     public async Task<CommentDto> CreateAsync(CreateCommentDto dto, string authorId, CancellationToken cancellationToken = default)
     {
+        // Validate post exists
+        var post = await _unitOfWork.Posts.GetByIdAsync(dto.PostId, cancellationToken);
+        if (post == null)
+            throw new InvalidOperationException($"Post with ID {dto.PostId} not found");
+
         var comment = new Comment
         {
             Content = dto.Content,
