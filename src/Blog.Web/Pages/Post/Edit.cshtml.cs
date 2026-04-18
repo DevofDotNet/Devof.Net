@@ -198,7 +198,7 @@ public class EditModel : PageModel
                 Publish = publish
             };
 
-            var updatedPost = await _postService.UpdateAsync(updateDto, userId);
+            var updatedPost = await _postService.UpdateAsync(updateDto, userId, isAdmin);
             _logger.LogInformation("Post updated successfully: {PostId}", updatedPost.Id);
             CurrentSlug = updatedPost.Slug;
 
@@ -234,7 +234,7 @@ public class EditModel : PageModel
             if (!isAuthor && !isAdmin)
                 return Forbid();
 
-            await _postService.DeleteAsync(PostId, userId);
+            await _postService.DeleteAsync(PostId, userId, isAdmin);
             return RedirectToPage("/Index");
         }
         catch (Exception ex)

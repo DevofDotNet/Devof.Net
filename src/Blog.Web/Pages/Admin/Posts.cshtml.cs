@@ -54,7 +54,7 @@ public class PostsModel : PageModel
             .ToListAsync();
     }
 
-    public async Task<IActionResult> OnPostUnpublishAsync(string id)
+    public async Task<IActionResult> OnPostUnpublishAsync(int id)
     {
         var post = await _context.Posts.FindAsync(id);
         if (post == null) return NotFound();
@@ -66,7 +66,7 @@ public class PostsModel : PageModel
         return RedirectToPage(new { PageIndex, SearchTerm, StatusFilter });
     }
     
-    public async Task<IActionResult> OnPostPublishAsync(string id)
+    public async Task<IActionResult> OnPostPublishAsync(int id)
     {
         var post = await _context.Posts.FindAsync(id);
         if (post == null) return NotFound();

@@ -127,8 +127,7 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
         if (uri.Scheme != Uri.UriSchemeHttps) return false;
         var host = uri.Host.ToLowerInvariant();
-        // Use EndsWith to prevent URLs like https://evil.com?github.com
-        return host.EndsWith("github.com") || host.EndsWith("github.io");
+        return host == "github.com" || host.EndsWith(".github.com") || host == "github.io" || host.EndsWith(".github.io");
     }
 
     private static bool BeAValidTwitterUrl(string? url)
@@ -137,8 +136,7 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
         if (uri.Scheme != Uri.UriSchemeHttps) return false;
         var host = uri.Host.ToLowerInvariant();
-        // Use EndsWith to prevent URLs like https://evil.com?twitter.com
-        return host.EndsWith("twitter.com") || host.EndsWith("x.com");
+        return host == "twitter.com" || host.EndsWith(".twitter.com") || host == "x.com" || host.EndsWith(".x.com");
     }
 
     private static bool BeAValidLinkedInUrl(string? url)
@@ -147,8 +145,7 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
         if (uri.Scheme != Uri.UriSchemeHttps) return false;
         var host = uri.Host.ToLowerInvariant();
-        // Use EndsWith to prevent URLs like https://evil.com?linkedin.com
-        return host.EndsWith("linkedin.com");
+        return host == "linkedin.com" || host.EndsWith(".linkedin.com");
     }
 }
 

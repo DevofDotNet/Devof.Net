@@ -74,9 +74,9 @@ public class ProfileModel : PageModel
         var isFollowing = await _unitOfWork.Followers.IsFollowingAsync(currentUserId, user.Id);
         
         if (isFollowing)
-            await _engagementService.UnfollowAsync(user.Id, currentUserId);
+            await _engagementService.UnfollowAsync(currentUserId, user.Id);
         else
-            await _engagementService.FollowAsync(user.Id, currentUserId);
+            await _engagementService.FollowAsync(currentUserId, user.Id);
 
         return RedirectToPage(new { username });
     }

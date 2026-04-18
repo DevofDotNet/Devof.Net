@@ -1,0 +1,111 @@
+<div id="cookieConsentBanner" class="cookie-consent-banner" style="display: none;">
+    <div class="cookie-consent-content">
+        <div class="cookie-consent-text">
+            <i class="fas fa-cookie-bite"></i>
+            <p>
+                We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.
+                <a href="/privacy">Learn more</a>
+            </p>
+        </div>
+        <div class="cookie-consent-actions">
+            <button id="cookieAcceptAll" class="btn btn-primary btn-sm">Accept All</button>
+            <button id="cookieAcceptEssential" class="btn btn-outline-secondary btn-sm">Essential Only</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cookie-consent-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: var(--color-bg-primary, #fff);
+        border-top: 1px solid var(--color-border, #e5e7eb);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        padding: var(--spacing-md, 16px) var(--spacing-xl, 32px);
+    }
+    .cookie-consent-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-lg, 24px);
+        flex-wrap: wrap;
+    }
+    .cookie-consent-text {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm, 8px);
+        flex: 1;
+        min-width: 280px;
+    }
+    .cookie-consent-text i {
+        font-size: 1.5rem;
+        color: var(--color-warning, #f59e0b);
+        flex-shrink: 0;
+    }
+    .cookie-consent-text p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--color-text-secondary, #6b7280);
+    }
+    .cookie-consent-text a {
+        color: var(--color-primary);
+        text-decoration: underline;
+    }
+    .cookie-consent-actions {
+        display: flex;
+        gap: var(--spacing-sm, 8px);
+        flex-shrink: 0;
+    }
+</style>
+
+<script>
+    (function() {
+        // Check localStorage first (fast path, avoids API call)
+        if (localStorage.getItem('cookieConsent') === 'true') return;
+
+        const banner = document.getElementById('cookieConsentBanner');
+        if (!banner) return;
+
+        // Check server-side consent status
+        fetch('/api/cookie-consent/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.hasConsented) {
+                    localStorage.setItem('cookieConsent', 'true');
+                } else {
+                    banner.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                banner.style.display = 'block';
+            });
+
+        function acceptCookies(consentType) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                       || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const formData = new FormData();
+            formData.append('consentType', consentType);
+
+            fetch('/api/cookie-consent/accept', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': token || '' },
+                body: formData
+            }).then(() => {
+                localStorage.setItem('cookieConsent', 'true');
+                banner.style.display = 'none';
+            }).catch(() => {
+                localStorage.setItem('cookieConsent', 'true');
+                banner.style.display = 'none';
+            });
+        }
+
+        document.getElementById('cookieAcceptAll')?.addEventListener('click', () => acceptCookies('Analytics'));
+        document.getElementById('cookieAcceptEssential')?.addEventListener('click', () => acceptCookies('Essential'));
+    })();
+</script>

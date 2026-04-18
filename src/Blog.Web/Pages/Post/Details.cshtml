@@ -255,7 +255,14 @@ else
                             }
                         </div>
                         <div class="comment-content markdown-content">
-                            @Html.Raw(comment.RenderedContent ?? comment.Content)
+                            @if (comment.RenderedContent != null)
+                            {
+                                @Html.Raw(comment.RenderedContent)
+                            }
+                            else
+                            {
+                                @comment.Content
+                            }
                         </div>
 
                         <!-- Replies -->
@@ -274,7 +281,7 @@ else
                                             </a>
                                             <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
-                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
+                                        <div class="comment-content">@if (reply.RenderedContent != null) { @Html.Raw(reply.RenderedContent) } else { @reply.Content }</div>
                                     </div>
                                 }
                             </div>

@@ -13,10 +13,20 @@ jobs:
 
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     - name: Publish
       run: dotnet publish -c Release -o out
+
+    - name: Stop service and clear old files
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          sudo systemctl stop devof
+          sudo rm -rf /var/www/devof.net/*
 
     - name: Upload files to /var/www/devof.net
       uses: appleboy/scp-action@v0.1.7
@@ -27,11 +37,12 @@ jobs:
         source: "out/**"
         target: "/var/www/devof.net"
         strip_components: 1
+        overwrite: true
 
-    - name: Restart Devof Service
+    - name: Start Devof Service
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        script: sudo systemctl restart devof
+        script: sudo systemctl start devof

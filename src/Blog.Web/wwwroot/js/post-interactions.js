@@ -20,10 +20,10 @@ function setupLikeInteraction() {
             // Disable button temporarily
             btn.disabled = true;
 
-            const response = await fetch(`/Post/Details?handler=LikeJson&slug=${slug}`, {
+            const response = await fetch(`/post/${slug}?handler=LikeJson`, {
                 method: 'POST',
                 headers: {
-                    'RequestVerificationToken': token,
+                    'X-CSRF-TOKEN': token,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
@@ -74,10 +74,10 @@ function setupBookmarkInteraction() {
         try {
             btn.disabled = true;
 
-            const response = await fetch(`/Post/Details?handler=BookmarkJson&slug=${slug}`, {
+            const response = await fetch(`/post/${slug}?handler=BookmarkJson`, {
                 method: 'POST',
                 headers: {
-                    'RequestVerificationToken': token,
+                    'X-CSRF-TOKEN': token,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });

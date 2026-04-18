@@ -1,0 +1,145 @@
+@page
+@model Blog.Web.Pages.Settings.DraftsModel
+@{
+    ViewData["Title"] = "My Drafts";
+}
+
+<div class="settings-page">
+    <div class="settings-container">
+        <h1 class="page-title">My Drafts</h1>
+
+        <div class="settings-card card">
+            <div class="card-body">
+                <div class="settings-tabs">
+                    <a href="/Settings/Profile" class="tab-btn">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <a href="/Settings/Account" class="tab-btn">
+                        <i class="fas fa-lock"></i> Account
+                    </a>
+                    <a href="/Settings/Drafts" class="tab-btn active">
+                        <i class="fas fa-file-alt"></i> Drafts
+                    </a>
+                </div>
+
+                @if (Model.Posts.Items.Any())
+                {
+                    <div class="drafts-list">
+                        @foreach (var post in Model.Posts.Items)
+                        {
+                            <div class="draft-item card">
+                                <div class="card-body">
+                                    <div class="draft-info">
+                                        <a href="/Post/Edit?slug=@post.Slug" class="draft-title">@post.Title</a>
+                                        <p class="draft-excerpt">@post.Excerpt</p>
+                                        <div class="draft-meta">
+                                            <span class="badge badge-secondary">Draft</span>
+                                            <span class="text-muted">Last edited @post.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="draft-actions">
+                                        <a href="/Post/Edit?slug=@post.Slug" class="btn btn-sm btn-outline">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@post.Id"
+                                              onsubmit="return confirm('Are you sure you want to delete this draft?');"
+                                              style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger-outline">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Posts.TotalPages > 1)
+                    {
+                        <nav class="pagination mt-4">
+                            @if (Model.Posts.HasPreviousPage)
+                            {
+                                <a href="/Settings/Drafts?page=@(Model.Posts.Page - 1)" class="pagination-link">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                            }
+                            @for (var i = 1; i <= Model.Posts.TotalPages && i <= 5; i++)
+                            {
+                                <a href="/Settings/Drafts?page=@i"
+                                   class="pagination-link @(i == Model.Posts.Page ? "active" : "")">@i</a>
+                            }
+                            @if (Model.Posts.HasNextPage)
+                            {
+                                <a href="/Settings/Drafts?page=@(Model.Posts.Page + 1)" class="pagination-link">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                            }
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="far fa-file-alt"></i></div>
+                        <h3 class="empty-state-title">No drafts yet</h3>
+                        <p class="empty-state-description">When you save a post without publishing, it will appear here.</p>
+                        <a href="/Post/Create" class="btn btn-primary mt-3">Write a Post</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .drafts-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+    .draft-item .card-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--spacing-lg);
+    }
+    .draft-info { flex: 1; }
+    .draft-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text);
+        display: block;
+        margin-bottom: var(--spacing-xs);
+    }
+    .draft-title:hover { color: var(--color-primary); }
+    .draft-excerpt {
+        color: var(--color-text-secondary);
+        font-size: 0.875rem;
+        margin-bottom: var(--spacing-sm);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .draft-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-size: 0.8rem;
+    }
+    .draft-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-shrink: 0;
+    }
+    .badge-secondary {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--color-text-muted);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.75rem;
+        border-radius: var(--radius-full);
+    }
+    .empty-state-icon { font-size: 3rem; color: var(--color-text-muted); margin-bottom: var(--spacing-md); }
+</style>
