@@ -18,7 +18,7 @@ jobs:
     - name: Publish
       run: dotnet publish -c Release -o out
 
-    - name: Stop service and clear old files
+    - name: Stop service and prepare deploy
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VM_HOST }}
@@ -27,8 +27,9 @@ jobs:
         script: |
           sudo systemctl stop devof
           sudo rm -rf /var/www/devof.net/*
+          sudo chown -R $USER:$USER /var/www/devof.net
 
-    - name: Upload files to /var/www/devof.net
+    - name: Upload files to production
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.VM_HOST }}
@@ -37,12 +38,13 @@ jobs:
         source: "out/**"
         target: "/var/www/devof.net"
         strip_components: 1
-        overwrite: true
 
-    - name: Start Devof Service
+    - name: Start service
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        script: sudo systemctl start devof
+        script: |
+          sudo chown -R www-data:www-data /var/www/devof.net
+          sudo systemctl start devof
