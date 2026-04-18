@@ -1,9 +1,11 @@
 using Blog.Domain.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blog.Domain.Entities;
 
 public class Subscriber : BaseEntity
 {
+    [MaxLength(254)]
     public string Email { get; set; } = string.Empty;
     public bool IsConfirmed { get; set; } = false;
     public string? ConfirmationToken { get; set; }
