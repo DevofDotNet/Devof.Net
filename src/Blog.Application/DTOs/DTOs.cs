@@ -48,7 +48,7 @@ public class PostDto
     public int LikeCount { get; set; }
     public int CommentCount { get; set; }
     public int BookmarkCount { get; set; }
-    public UserDto Author { get; set; } = null!;
+    public UserDto? Author { get; set; }
     public List<TagDto> Tags { get; set; } = new();
     public bool IsLiked { get; set; }
     public bool IsBookmarked { get; set; }
