@@ -56,7 +56,7 @@ public class LocalImageService : IImageService
         }
 
         // Check file size (need to buffer to check length)
-        if (fileStream.Length > MaxFileSizeBytes)
+        if (!fileStream.CanSeek || fileStream.Length > MaxFileSizeBytes)
         {
             throw new ArgumentException($"File size exceeds maximum of {MaxFileSizeBytes / (1024 * 1024)}MB");
         }
