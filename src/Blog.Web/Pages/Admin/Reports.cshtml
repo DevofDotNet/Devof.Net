@@ -1,0 +1,188 @@
+@page
+@model Blog.Web.Pages.Admin.ReportsModel
+@using Blog.Domain.Enums
+@{
+    ViewData["Title"] = "Manage Reports - Admin";
+}
+
+<div class="admin-layout">
+    <aside class="admin-sidebar card">
+        <partial name="_AdminSidebar" />
+    </aside>
+
+    <main class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">Pending Reports</h1>
+            <span class="text-muted">@Model.TotalPending pending</span>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (Model.Reports.Any())
+        {
+            <div class="reports-list">
+                @foreach (var report in Model.Reports)
+                {
+                    <div class="card report-card">
+                        <div class="card-body">
+                            <div class="report-header">
+                                <div class="report-type">
+                                    @switch (report.Type)
+                                    {
+                                        case ReportType.Post:
+                                            <span class="badge badge-warning"><i class="fas fa-newspaper"></i> Post Report</span>
+                                            break;
+                                        case ReportType.Comment:
+                                            <span class="badge badge-info"><i class="fas fa-comment"></i> Comment Report</span>
+                                            break;
+                                        case ReportType.User:
+                                            <span class="badge badge-danger"><i class="fas fa-user"></i> User Report</span>
+                                            break;
+                                    }
+                                    <span class="text-muted">@report.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                                </div>
+                            </div>
+
+                            <div class="report-body">
+                                <div class="report-info">
+                                    <p><strong>Reported by:</strong> @(report.Reporter?.DisplayName ?? report.Reporter?.UserName ?? "Unknown")</p>
+                                    <p><strong>Reason:</strong> @report.Reason</p>
+                                    @if (!string.IsNullOrEmpty(report.Details))
+                                    {
+                                        <p><strong>Details:</strong> @report.Details</p>
+                                    }
+                                </div>
+
+                                <div class="report-target">
+                                    @if (report.ReportedPost != null)
+                                    {
+                                        <p><strong>Post:</strong>
+                                            <a href="/post/@report.ReportedPost.Slug" target="_blank">@report.ReportedPost.Title</a>
+                                        </p>
+                                    }
+                                    @if (report.ReportedComment != null)
+                                    {
+                                        <p><strong>Comment:</strong> @report.ReportedComment.Content</p>
+                                    }
+                                    @if (report.ReportedUser != null)
+                                    {
+                                        <p><strong>User:</strong>
+                                            <a href="/Author/@report.ReportedUser.UserName">@(report.ReportedUser.DisplayName ?? report.ReportedUser.UserName)</a>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="report-actions">
+                                <form method="post" asp-page-handler="Resolve" asp-route-id="@report.Id" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="text" name="notes" placeholder="Moderator notes (optional)" class="form-control form-control-sm" style="display:inline-block; width:auto; margin-right:8px;" />
+                                    <button type="submit" class="btn btn-sm btn-success" title="Mark as resolved">
+                                        <i class="fas fa-check"></i> Resolve
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="Dismiss" asp-route-id="@report.Id" class="d-inline"
+                                      onsubmit="return confirm('Dismiss this report?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Dismiss">
+                                        <i class="fas fa-times"></i> Dismiss
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.TotalPending > Model.PageSize)
+            {
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="btn-group">
+                        <a href="@(Model.PageIndex > 1 ? $"/Admin/Reports?PageIndex={Model.PageIndex - 1}" : "#")"
+                           class="btn btn-outline-secondary @(Model.PageIndex <= 1 ? "disabled" : "")">Previous</a>
+                        <a href="@(Model.PageIndex * Model.PageSize < Model.TotalPending ? $"/Admin/Reports?PageIndex={Model.PageIndex + 1}" : "#")"
+                           class="btn btn-outline-secondary @(Model.PageIndex * Model.PageSize >= Model.TotalPending ? "disabled" : "")">Next</a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
+                <h3 class="empty-state-title">No pending reports</h3>
+                <p class="empty-state-description">All reports have been reviewed. Great work!</p>
+            </div>
+        }
+    </main>
+</div>
+
+<style>
+    .admin-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: var(--spacing-xl);
+        min-height: 70vh;
+    }
+    .admin-sidebar {
+        position: sticky;
+        top: 88px;
+        height: fit-content;
+    }
+    .reports-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    .report-card { border-left: 4px solid var(--color-warning); }
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+    }
+    .report-type {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+    .report-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+    }
+    .report-body p { margin-bottom: var(--spacing-xs); font-size: 0.875rem; }
+    .report-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+        border-top: 1px solid var(--color-border);
+        padding-top: var(--spacing-md);
+    }
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--color-warning);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.75rem;
+        border-radius: var(--radius-full);
+    }
+    .badge-info {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.75rem;
+        border-radius: var(--radius-full);
+    }
+    .empty-state-icon { font-size: 3rem; color: var(--color-success); margin-bottom: var(--spacing-md); }
+    @@media (max-width: 1024px) {
+        .admin-layout { grid-template-columns: 1fr; }
+        .admin-sidebar { position: static; }
+        .report-body { grid-template-columns: 1fr; }
+    }
+</style>

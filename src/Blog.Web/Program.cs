@@ -112,6 +112,9 @@ var uploadPath = Path.Combine(builder.Environment.WebRootPath ?? "wwwroot", "upl
 var siteUrl = builder.Configuration["AppSettings:SiteUrl"] ?? "https://localhost:5001";
 builder.Services.AddSingleton<IImageService>(new LocalImageService(uploadPath, siteUrl));
 
+// Background Services
+builder.Services.AddHostedService<Blog.Web.Services.TrendingScoreBackgroundService>();
+
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePostValidator>();

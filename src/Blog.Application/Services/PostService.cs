@@ -18,10 +18,10 @@ public interface IPostService
     Task<PagedResult<PostDto>> GetByAuthorAsync(string authorId, int page, int pageSize, PostStatus? status = null, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<PagedResult<PostDto>> GetBookmarkedPostsAsync(int page, int pageSize, string userId, CancellationToken cancellationToken = default);
     Task<PostDetailDto> CreateAsync(CreatePostDto dto, string authorId, CancellationToken cancellationToken = default);
-    Task<PostDetailDto> UpdateAsync(UpdatePostDto dto, string authorId, CancellationToken cancellationToken = default);
-    Task PublishAsync(int postId, string authorId, CancellationToken cancellationToken = default);
-    Task UnpublishAsync(int postId, string authorId, CancellationToken cancellationToken = default);
-    Task DeleteAsync(int postId, string authorId, CancellationToken cancellationToken = default);
+    Task<PostDetailDto> UpdateAsync(UpdatePostDto dto, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default);
+    Task PublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default);
+    Task UnpublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default);
     Task IncrementViewAsync(int postId, CancellationToken cancellationToken = default);
     Task UpdateTrendingScoresAsync(CancellationToken cancellationToken = default);
 }
@@ -223,13 +223,13 @@ public class PostService : IPostService
         return await MapToDetailDtoAsync(savedPost!, authorId, cancellationToken);
     }
 
-    public async Task<PostDetailDto> UpdateAsync(UpdatePostDto dto, string authorId, CancellationToken cancellationToken = default)
+    public async Task<PostDetailDto> UpdateAsync(UpdatePostDto dto, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(dto.Id, cancellationToken);
         if (post == null)
             throw new InvalidOperationException("Post not found");
 
-        if (post.AuthorId != authorId)
+        if (post.AuthorId != authorId && !isAdmin)
             throw new UnauthorizedAccessException("You are not the author of this post");
 
         // Regenerate slug if title changed
@@ -272,13 +272,13 @@ public class PostService : IPostService
         return await MapToDetailDtoAsync(post, authorId, cancellationToken);
     }
 
-    public async Task PublishAsync(int postId, string authorId, CancellationToken cancellationToken = default)
+    public async Task PublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
         if (post == null)
             throw new InvalidOperationException("Post not found");
 
-        if (post.AuthorId != authorId)
+        if (post.AuthorId != authorId && !isAdmin)
             throw new UnauthorizedAccessException("You are not the author of this post");
 
         post.Status = PostStatus.Published;
@@ -289,13 +289,13 @@ public class PostService : IPostService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UnpublishAsync(int postId, string authorId, CancellationToken cancellationToken = default)
+    public async Task UnpublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
         if (post == null)
             throw new InvalidOperationException("Post not found");
 
-        if (post.AuthorId != authorId)
+        if (post.AuthorId != authorId && !isAdmin)
             throw new UnauthorizedAccessException("You are not the author of this post");
 
         post.Status = PostStatus.Unpublished;
@@ -305,13 +305,13 @@ public class PostService : IPostService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(int postId, string authorId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
         if (post == null)
             throw new InvalidOperationException("Post not found");
 
-        if (post.AuthorId != authorId)
+        if (post.AuthorId != authorId && !isAdmin)
             throw new UnauthorizedAccessException("You are not the author of this post");
 
         await _unitOfWork.Posts.DeleteAsync(postId, cancellationToken);
@@ -393,7 +393,7 @@ public class PostService : IPostService
             BookmarkCount = post.Bookmarks?.Count ?? 0,
             IsLiked = isLiked,
             IsBookmarked = isBookmarked,
-            Author = MapUserToDto(post.Author),
+            Author = post.Author != null ? MapUserToDto(post.Author) : null,
             Tags = post.PostTags?.Where(pt => pt.Tag != null).Select(pt => new TagDto
             {
                 Id = pt.Tag!.Id,

@@ -12,7 +12,7 @@
     var isAuthor = User.Identity?.IsAuthenticated == true &&
     (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.Post?.Author.Id);
     var isAdmin = User.IsInRole("Admin");
-    var canEdit = isAuthor || isAdmin;
+    var canEdit = Model.CanEdit || User.IsInRole("Admin");
 }
 
 @if (Model.Post != null)
@@ -255,7 +255,14 @@ else
                             }
                         </div>
                         <div class="comment-content markdown-content">
-                            @Html.Raw(comment.RenderedContent ?? comment.Content)
+                            @if (comment.RenderedContent != null)
+                            {
+                                @Html.Raw(comment.RenderedContent)
+                            }
+                            else
+                            {
+                                @comment.Content
+                            }
                         </div>
 
                         <!-- Replies -->
@@ -274,7 +281,7 @@ else
                                             </a>
                                             <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
-                                        <div class="comment-content">@Html.Raw(reply.RenderedContent ?? reply.Content)</div>
+                                        <div class="comment-content">@if (reply.RenderedContent != null) { @Html.Raw(reply.RenderedContent) } else { @reply.Content }</div>
                                     </div>
                                 }
                             </div>

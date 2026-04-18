@@ -77,6 +77,8 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
     public UserProfileUpdateValidator()
     {
         RuleFor(x => x.DisplayName)
+            .NotEmpty().WithMessage("Display name is required")
+            .MinimumLength(2).WithMessage("Display name must be at least 2 characters")
             .MaximumLength(100).WithMessage("Display name must not exceed 100 characters");
 
         RuleFor(x => x.Bio)
@@ -89,18 +91,18 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
 
         RuleFor(x => x.GitHubUrl)
             .MaximumLength(200).WithMessage("GitHub URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.GitHubUrl))
-            .WithMessage("GitHub must be a valid URL");
+            .Must(BeAValidGitHubUrl).When(x => !string.IsNullOrEmpty(x.GitHubUrl))
+            .WithMessage("GitHub URL must be a valid GitHub profile URL (e.g., https://github.com/username)");
 
         RuleFor(x => x.TwitterUrl)
             .MaximumLength(200).WithMessage("Twitter URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.TwitterUrl))
-            .WithMessage("Twitter must be a valid URL");
+            .Must(BeAValidTwitterUrl).When(x => !string.IsNullOrEmpty(x.TwitterUrl))
+            .WithMessage("Twitter URL must be a valid Twitter/X profile URL (e.g., https://twitter.com/username)");
 
         RuleFor(x => x.LinkedInUrl)
             .MaximumLength(200).WithMessage("LinkedIn URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.LinkedInUrl))
-            .WithMessage("LinkedIn must be a valid URL");
+            .Must(BeAValidLinkedInUrl).When(x => !string.IsNullOrEmpty(x.LinkedInUrl))
+            .WithMessage("LinkedIn URL must be a valid LinkedIn profile URL (e.g., https://linkedin.com/in/username)");
 
         RuleFor(x => x.Location)
             .MaximumLength(100).WithMessage("Location must not exceed 100 characters");
@@ -110,6 +112,40 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
     {
         if (string.IsNullOrEmpty(url)) return true;
         return Uri.TryCreate(url, UriKind.Absolute, out _);
+    }
+
+    private static bool BeAValidHttpsUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        return uri.Scheme == Uri.UriSchemeHttps;
+    }
+
+    private static bool BeAValidGitHubUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        if (uri.Scheme != Uri.UriSchemeHttps) return false;
+        var host = uri.Host.ToLowerInvariant();
+        return host == "github.com" || host.EndsWith(".github.com") || host == "github.io" || host.EndsWith(".github.io");
+    }
+
+    private static bool BeAValidTwitterUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        if (uri.Scheme != Uri.UriSchemeHttps) return false;
+        var host = uri.Host.ToLowerInvariant();
+        return host == "twitter.com" || host.EndsWith(".twitter.com") || host == "x.com" || host.EndsWith(".x.com");
+    }
+
+    private static bool BeAValidLinkedInUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        if (uri.Scheme != Uri.UriSchemeHttps) return false;
+        var host = uri.Host.ToLowerInvariant();
+        return host == "linkedin.com" || host.EndsWith(".linkedin.com");
     }
 }
 
