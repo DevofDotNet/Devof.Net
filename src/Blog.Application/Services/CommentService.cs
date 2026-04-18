@@ -103,13 +103,13 @@ public class CommentService : ICommentService
             IsDeleted = comment.IsDeleted,
             CreatedAt = comment.CreatedAt,
             ParentCommentId = comment.ParentCommentId,
-            Author = new UserDto
+            Author = comment.Author != null ? new UserDto
             {
                 Id = comment.Author.Id,
                 UserName = comment.Author.UserName ?? string.Empty,
                 DisplayName = comment.Author.DisplayName,
                 AvatarUrl = comment.Author.AvatarUrl
-            },
+            } : null,
             Replies = comment.Replies?.Select(MapToDto).ToList() ?? new List<CommentDto>()
         };
     }

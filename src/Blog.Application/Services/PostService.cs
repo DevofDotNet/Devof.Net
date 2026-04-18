@@ -393,7 +393,7 @@ public class PostService : IPostService
             BookmarkCount = post.Bookmarks?.Count ?? 0,
             IsLiked = isLiked,
             IsBookmarked = isBookmarked,
-            Author = MapUserToDto(post.Author),
+            Author = post.Author != null ? MapUserToDto(post.Author) : null,
             Tags = post.PostTags?.Where(pt => pt.Tag != null).Select(pt => new TagDto
             {
                 Id = pt.Tag!.Id,
