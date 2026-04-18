@@ -38,7 +38,7 @@ public class PostsModel : PageModel
 
         if (!string.IsNullOrWhiteSpace(SearchTerm))
         {
-            query = query.Where(p => p.Title.Contains(SearchTerm) || p.Author.DisplayName.Contains(SearchTerm));
+            query = query.Where(p => p.Title.Contains(SearchTerm) || (p.Author != null && p.Author.DisplayName.Contains(SearchTerm)));
         }
 
         if (StatusFilter.HasValue)
