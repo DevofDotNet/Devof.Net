@@ -88,7 +88,7 @@ public class AnalyticsService : IAnalyticsService
             ViewCount = viewCount,
             UniqueViews = uniqueViews,
             LikeCount = likeCount,
-            CommentCount = post.Comments.Count,
+            CommentCount = post.Comments?.Count ?? 0,
             EngagementRate = engagementRate,
             PublishedAt = post.PublishedAt
         };
