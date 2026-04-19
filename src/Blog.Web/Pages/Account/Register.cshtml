@@ -66,12 +66,16 @@
             </div>
 
             <div class="social-auth">
-                <a href="/Account/ExternalLogin?provider=Google" class="btn btn-outline social-btn">
-                    <i class="fab fa-google"></i> Google
-                </a>
-                <a href="/Account/ExternalLogin?provider=GitHub" class="btn btn-outline social-btn">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
+                <form asp-page="/Account/ExternalLogin" asp-route-returnUrl="@Url.Content("~/")" method="post" style="flex: 1;">
+                    <button type="submit" name="provider" value="Google" class="btn btn-outline social-btn" style="width: 100%;">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                </form>
+                <form asp-page="/Account/ExternalLogin" asp-route-returnUrl="@Url.Content("~/")" method="post" style="flex: 1;">
+                    <button type="submit" name="provider" value="GitHub" class="btn btn-outline social-btn" style="width: 100%;">
+                        <i class="fab fa-github"></i> GitHub
+                    </button>
+                </form>
             </div>
 
             <p class="auth-footer">
