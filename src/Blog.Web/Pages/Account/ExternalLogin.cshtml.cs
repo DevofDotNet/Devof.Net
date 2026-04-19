@@ -108,7 +108,7 @@ public class ExternalLoginModel : PageModel
         }
 
         // Create new user
-        var userName = GenerateUserName(name ?? email.Split('@')[0]);
+        var userName = await GenerateUserNameAsync(name ?? email.Split('@')[0]);
         var user = new ApplicationUser
         {
             UserName = userName,
@@ -147,15 +147,20 @@ public class ExternalLoginModel : PageModel
         return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
     }
 
-    private string GenerateUserName(string baseName)
+    private async Task<string> GenerateUserNameAsync(string baseName)
     {
-        // Clean up username
         var userName = new string(baseName.Where(c => char.IsLetterOrDigit(c) || c == '_').ToArray()).ToLower();
         if (string.IsNullOrEmpty(userName) || userName.Length < 3)
-        {
             userName = "user" + Random.Shared.Next(10000, 99999);
+
+        var candidate = userName;
+        var suffix = 1;
+        while (await _userManager.FindByNameAsync(candidate) != null)
+        {
+            candidate = $"{userName}{suffix}";
+            suffix++;
         }
-        return userName;
+        return candidate;
     }
 
     private static string? GetAvatarUrl(ExternalLoginInfo info)

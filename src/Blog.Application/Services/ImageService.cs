@@ -7,6 +7,7 @@ public interface IImageService
     Task<string> UploadAsync(Stream fileStream, string fileName, string contentType, CancellationToken cancellationToken = default);
     Task DeleteAsync(string imageUrl, CancellationToken cancellationToken = default);
     string GetImageUrl(string fileName);
+    Task<(Stream Stream, string ContentType)?> GetStreamAsync(string objectName, CancellationToken cancellationToken = default);
 }
 
 public class LocalImageService : IImageService
@@ -62,13 +63,21 @@ public class LocalImageService : IImageService
         }
 
         // Generate unique filename with original extension preserved
+        // Support subdirectory prefixes (e.g., "avatars/filename.jpg")
+        var subDir = Path.GetDirectoryName(fileName) ?? "";
         var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-        var filePath = Path.Combine(_uploadPath, uniqueFileName);
+        var targetDir = Path.Combine(_uploadPath, subDir);
+        
+        if (!Directory.Exists(targetDir))
+            Directory.CreateDirectory(targetDir);
+
+        var filePath = Path.Combine(targetDir, uniqueFileName);
 
         using var outputStream = new FileStream(filePath, FileMode.Create);
         await fileStream.CopyToAsync(outputStream, cancellationToken);
 
-        return GetImageUrl(uniqueFileName);
+        var relativePath = string.IsNullOrEmpty(subDir) ? uniqueFileName : $"{subDir}/{uniqueFileName}";
+        return GetImageUrl(relativePath);
     }
 
     public Task DeleteAsync(string imageUrl, CancellationToken cancellationToken = default)
@@ -98,5 +107,11 @@ public class LocalImageService : IImageService
     {
         // Use relative URL path to work regardless of domain/port
         return $"/uploads/{fileName}";
+    }
+
+    public Task<(Stream Stream, string ContentType)?> GetStreamAsync(string objectName, CancellationToken cancellationToken = default)
+    {
+        // Local files are served directly by static files middleware; this is a no-op
+        return Task.FromResult<(Stream Stream, string ContentType)?>(null);
     }
 }

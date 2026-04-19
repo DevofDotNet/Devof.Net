@@ -108,9 +108,23 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddScoped<IEmailService, BrevoEmailService>();
 
 // Image Service
-var uploadPath = Path.Combine(builder.Environment.WebRootPath ?? "wwwroot", "uploads");
-var siteUrl = builder.Configuration["AppSettings:SiteUrl"] ?? "https://localhost:5001";
-builder.Services.AddSingleton<IImageService>(new LocalImageService(uploadPath, siteUrl));
+var ociConfig = builder.Configuration.GetSection("OciStorage");
+var ociBucket = ociConfig["BucketName"];
+if (!string.IsNullOrEmpty(ociBucket))
+{
+    var ociOptions = new Blog.Infrastructure.Services.OciStorageOptions();
+    ociConfig.Bind(ociOptions);
+    builder.Services.AddSingleton<IImageService>(sp =>
+        new Blog.Infrastructure.Services.OciObjectStorageImageService(
+            ociOptions,
+            sp.GetRequiredService<ILogger<Blog.Infrastructure.Services.OciObjectStorageImageService>>()));
+}
+else
+{
+    var uploadPath = Path.Combine(builder.Environment.WebRootPath ?? "wwwroot", "uploads");
+    var siteUrl = builder.Configuration["AppSettings:SiteUrl"] ?? "https://localhost:5001";
+    builder.Services.AddSingleton<IImageService>(new LocalImageService(uploadPath, siteUrl));
+}
 
 // Background Services
 builder.Services.AddHostedService<Blog.Web.Services.TrendingScoreBackgroundService>();
