@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Blog.Application.Services;
 using Blog.Domain.Entities;
 using Blog.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ public class ProfileModel : PageModel
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
+    private readonly IImageService _imageService;
     private readonly ILogger<ProfileModel> _logger;
 
     public ProfileModel(
@@ -22,13 +24,15 @@ public class ProfileModel : PageModel
         SignInManager<ApplicationUser> signInManager,
         IWebHostEnvironment environment,
         ILogger<ProfileModel> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IImageService imageService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _environment = environment;
         _logger = logger;
         _configuration = configuration;
+        _imageService = imageService;
     }
 
     [BindProperty]
@@ -134,9 +138,9 @@ public class ProfileModel : PageModel
             }
 
             // Delete old avatar if it was uploaded
-            if (!string.IsNullOrEmpty(user.AvatarUrl) && user.AvatarUrl.StartsWith("/uploads/"))
+            if (!string.IsNullOrEmpty(user.AvatarUrl))
             {
-                DeleteOldAvatar(user.AvatarUrl);
+                await _imageService.DeleteAsync(user.AvatarUrl);
             }
 
             user.AvatarUrl = await SaveUploadedAvatar(Input.AvatarFile, user.Id);
@@ -204,31 +208,8 @@ public class ProfileModel : PageModel
     private async Task<string> SaveUploadedAvatar(IFormFile file, string userId)
     {
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var fileName = $"{userId}_{DateTime.UtcNow.Ticks}{extension}";
-        var uploadsDir = Path.Combine(_environment.WebRootPath, "uploads", "avatars");
-        Directory.CreateDirectory(uploadsDir);
-        var filePath = Path.Combine(uploadsDir, fileName);
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-        return $"/uploads/avatars/{fileName}";
-    }
-
-    private void DeleteOldAvatar(string avatarUrl)
-    {
-        try
-        {
-            var fileName = Path.GetFileName(avatarUrl);
-            var filePath = Path.Combine(_environment.WebRootPath, "uploads", "avatars", fileName);
-            if (System.IO.File.Exists(filePath))
-            {
-                System.IO.File.Delete(filePath);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to delete old avatar file: {AvatarUrl}", avatarUrl);
-        }
+        var fileName = $"avatars/{userId}_{DateTime.UtcNow.Ticks}{extension}";
+        using var stream = file.OpenReadStream();
+        return await _imageService.UploadAsync(stream, fileName, file.ContentType);
     }
 }
