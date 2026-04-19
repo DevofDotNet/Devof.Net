@@ -45,7 +45,8 @@ public class OciObjectStorageImageService : IImageService, IDisposable
 
         // Write key to a persistent temp file (deleted on Dispose)
         _tempKeyFile = Path.Combine(Path.GetTempPath(), $"oci_key_{Guid.NewGuid()}.pem");
-        File.WriteAllText(_tempKeyFile, _options.PrivateKey, Encoding.UTF8);
+        var keyContent = _options.PrivateKey.Replace("\\n", "\n");
+        File.WriteAllText(_tempKeyFile, keyContent, Encoding.UTF8);
     }
 
     public void Dispose()
