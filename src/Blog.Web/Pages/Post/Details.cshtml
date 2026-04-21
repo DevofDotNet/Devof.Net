@@ -242,12 +242,15 @@ else
                 <div class="comment-item card" id="comment-@comment.Id">
                     <div class="card-body">
                         <div class="comment-header">
-                            <a href="/Author/@comment.Author.UserName" class="comment-author">
-                                <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
-                                    class="comment-avatar" />
-                                <span class="comment-author-name">@(comment.Author.DisplayName ??
-                            comment.Author.UserName)</span>
-                            </a>
+                            @if (comment.Author != null)
+                            {
+                                <a href="/Author/@comment.Author.UserName" class="comment-author">
+                                    <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                        class="comment-avatar" />
+                                    <span class="comment-author-name">@(comment.Author.DisplayName ??
+                                comment.Author.UserName)</span>
+                                </a>
+                            }
                             <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
                             @if (comment.IsEdited)
                             {
@@ -273,12 +276,15 @@ else
                                 {
                                     <div class="comment-item reply" id="comment-@reply.Id">
                                         <div class="comment-header">
-                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
-                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
-                                                    class="comment-avatar" />
-                                                <span class="comment-author-name">@(reply.Author.DisplayName ??
-                                    reply.Author.UserName)</span>
-                                            </a>
+                                            @if (reply.Author != null)
+                                            {
+                                                <a href="/Author/@reply.Author.UserName" class="comment-author">
+                                                    <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                                        class="comment-avatar" />
+                                                    <span class="comment-author-name">@(reply.Author.DisplayName ??
+                                                reply.Author.UserName)</span>
+                                                </a>
+                                            }
                                             <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
                                         <div class="comment-content">@if (reply.RenderedContent != null) { @Html.Raw(reply.RenderedContent) } else { @reply.Content }</div>
