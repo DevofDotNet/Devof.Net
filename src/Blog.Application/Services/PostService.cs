@@ -220,7 +220,9 @@ public class PostService : IPostService
 
         // Reload post with navigation properties to avoid null reference in mapping
         var savedPost = await _unitOfWork.Posts.GetByIdAsync(post.Id, cancellationToken);
-        return await MapToDetailDtoAsync(savedPost!, authorId, cancellationToken);
+        if (savedPost == null)
+            throw new InvalidOperationException($"Failed to retrieve post with ID {post.Id} after creation.");
+        return await MapToDetailDtoAsync(savedPost, authorId, cancellationToken);
     }
 
     public async Task<PostDetailDto> UpdateAsync(UpdatePostDto dto, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
@@ -368,6 +370,13 @@ public class PostService : IPostService
         slug = Regex.Replace(slug, @"\s+", "-");
         slug = Regex.Replace(slug, @"-+", "-");
         slug = slug.Trim('-');
+        
+        // Fallback for empty slugs (e.g., titles with only special characters)
+        if (string.IsNullOrEmpty(slug))
+        {
+            slug = $"post-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        }
+        
         return slug.Length > 200 ? slug.Substring(0, 200) : slug;
     }
 
