@@ -13,19 +13,19 @@ public class NewsletterModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailService _emailService;
-    private readonly ApplicationDbContext _context;
     private readonly ILogger<NewsletterModel> _logger;
+    private readonly ApplicationDbContext _context;
 
     public NewsletterModel(
         UserManager<ApplicationUser> userManager,
         IEmailService emailService,
-        ApplicationDbContext context,
-        ILogger<NewsletterModel> logger)
+        ILogger<NewsletterModel> logger,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _emailService = emailService;
-        _context = context;
         _logger = logger;
+        _context = context;
     }
 
     [BindProperty]
@@ -84,73 +84,57 @@ public class NewsletterModel : PageModel
     private async Task<IActionResult> HandleSubscribeAsync()
     {
         // GDPR: Require double opt-in - send confirmation email instead of immediate subscription
-        var user = IsAuthenticated ? await _userManager.GetUserAsync(User) : null;
         var email = Input.Email.Trim().ToLowerInvariant();
-        string confirmationLink;
-        bool emailSent;
 
-        // Check if already subscribed
-        var existing = await _context.Subscribers.FirstOrDefaultAsync(s => s.Email == email);
-        if (existing != null)
-        {
-            if (existing.IsActive && existing.IsConfirmed)
-            {
-                StatusMessage = "You're already subscribed!";
-                IsSuccess = true;
-                return Page();
-            }
-            // Update token for re-confirmation
-            existing.ConfirmationToken = Guid.NewGuid().ToString("N");
-            existing.IsActive = false;
-            existing.IsConfirmed = false;
-            existing.SubscribedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            
-            confirmationLink = $"{Request.Scheme}://{Request.Host}/api/newsletter/confirm?token={existing.ConfirmationToken}&email={existing.Email}";
-            emailSent = await _emailService.SendNotificationEmailAsync(
-                email,
-                "Confirm your newsletter subscription",
-                $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p>");
-            
-            StatusMessage = "Welcome back! Please check your email to confirm your subscription.";
-            IsSuccess = true;
-            return Page();
-        }
+        // Find or create subscriber record so the confirmation link works
+        var subscriber = await _context.Subscribers
+            .FirstOrDefaultAsync(s => s.Email == email);
 
-        // Generate confirmation token
+        var isNew = subscriber == null;
         var confirmationToken = Guid.NewGuid().ToString("N");
 
-        // Store pending subscription in database (matching API implementation)
-        var subscriber = new Subscriber
+        if (subscriber == null)
         {
-            Email = email,
-            SubscribedAt = DateTime.UtcNow,
-            ConfirmationToken = confirmationToken,
-            IsActive = false,
-            IsConfirmed = false
-        };
-        _context.Subscribers.Add(subscriber);
+            subscriber = new Subscriber
+            {
+                Email = email,
+                ConfirmationToken = confirmationToken,
+                IsActive = false,
+                IsConfirmed = false,
+                SubscribedAt = DateTime.UtcNow
+            };
+            _context.Subscribers.Add(subscriber);
+        }
+        else
+        {
+            subscriber.ConfirmationToken = confirmationToken;
+            subscriber.IsActive = false;
+            subscriber.IsConfirmed = false;
+            subscriber.UnsubscribedAt = null;
+            subscriber.SubscribedAt = DateTime.UtcNow;
+        }
+
         await _context.SaveChangesAsync();
 
-        // Use API endpoint for confirmation link
-        confirmationLink = $"{Request.Scheme}://{Request.Host}/api/newsletter/confirm?token={confirmationToken}&email={email}";
+        // Use API endpoint for confirmation link (NewsletterConfirm page doesn't exist)
+        var confirmationLink = $"{Request.Scheme}://{Request.Host}/api/newsletter/confirm?token={confirmationToken}&email={email}";
 
-        emailSent = await _emailService.SendNotificationEmailAsync(
+        var emailSent = await _emailService.SendNotificationEmailAsync(
             email,
             "Confirm your newsletter subscription",
-            $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p>");
+            $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p><p>Or copy this link: {confirmationLink}</p>");
 
         if (emailSent)
         {
             StatusMessage = "Please check your email to confirm your subscription.";
             IsSuccess = true;
-            _logger.LogInformation("Confirmation email sent to {Email} for newsletter", email);
+            _logger.LogInformation("Newsletter confirmation email sent to {Email} (isNew={IsNew})", email, isNew);
         }
         else
         {
             StatusMessage = "Failed to send confirmation email. Please try again later.";
             IsSuccess = false;
-            _logger.LogWarning("Failed to send confirmation email to {Email}", email);
+            _logger.LogWarning("Failed to send newsletter confirmation email to {Email}", email);
         }
 
         return Page();

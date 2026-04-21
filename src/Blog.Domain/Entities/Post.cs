@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Blog.Domain.Common;
 using Blog.Domain.Enums;
 
@@ -5,8 +6,16 @@ namespace Blog.Domain.Entities;
 
 public class Post : BaseAuditableEntity
 {
+        [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, MinimumLength = 3)]
     public string Title { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(150)]
     public string Slug { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(10)]
     public string Content { get; set; } = string.Empty; // Markdown content
     public string? RenderedContent { get; set; } // HTML rendered content
     public string? Excerpt { get; set; }
