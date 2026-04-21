@@ -32,7 +32,7 @@ public class Post : BaseAuditableEntity
 
     // Author
     public string AuthorId { get; set; } = string.Empty;
-    public virtual ApplicationUser Author { get; set; } = null!;
+    public virtual ApplicationUser? Author { get; set; }
 
     // Navigation Properties
     public virtual ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
