@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-20T06:30:46.949Z",
+  "entries": {
+    "memory:memory/2026-04-11.md:1:17": {
+      "key": "memory:memory/2026-04-11.md:1:17",
+      "path": "memory/2026-04-11.md",
+      "startLine": 1,
+      "endLine": 17,
+      "source": "memory",
+      "snippet": "# 2026-04-11 ## Notes - 12:26 AM heartbeat: Cron jobs healthy. Morning Briefing last run was Apr 10 ~1:30 PM UTC (22h ago), next ~9h. daily-dotnet-blog last run Apr 10 ~4 PM UTC (16h ago). Previous SIGTERM alerts cleared - jobs running normally. - 12:56 AM heartbeat: ⚠️ CRON JOBS STALE - Both nextRun timestamps are in the past (Apr 8). Morning Briefing and daily-dotnet-blog haven't run since Apr 10. Possible cron scheduler issue. - 1:56 AM: Morning Briefing ran but failed with StreamChat delivery error. Next run scheduled ~Apr 12 12:00 UTC. - 3:26 AM: Status unchanged. daily-dotnet-blog still waiting to run (due ~6:30 AM UTC today). - 2:26 AM: Status unchanged. Morning Briefing still error",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 1.2631883008664895,
+      "maxScore": 0.6690878282954775,
+      "firstRecalledAt": "2026-04-14T06:35:32.207Z",
+      "lastRecalledAt": "2026-04-18T06:59:21.468Z",
+      "queryHashes": [
+        "4b8323106acc",
+        "f7e91be2e07f"
+      ],
+      "recallDays": [
+        "2026-04-14",
+        "2026-04-18"
+      ],
+      "conceptTags": [
+        "daily-dotnet-blog",
+        "heartbeat",
+        "cron",
+        "jobs",
+        "healthy",
+        "morning",
+        "briefing",
+        "last"
+      ]
+    },
+    "memory:memory/2026-04-11.md:15:25": {
+      "key": "memory:memory/2026-04-11.md:15:25",
+      "path": "memory/2026-04-11.md",
+      "startLine": 15,
+      "endLine": 25,
+      "source": "memory",
+      "snippet": "- 6:26 AM: daily-dotnet-blog likely running now or in next few minutes (12 PM IST). - 6:56 AM: daily-dotnet-blog timed out (120s limit). Error: \"job execution timed out\". Need to increase timeout or fix job. - 8:26 AM: Status unchanged - job stuck in error, nextRun still shows bad timestamp (58248). Needs manual intervention to fix. - 10:15 AM: daily-dotnet-blog SUCCESS! Published \"Daily .NET News Update — April 11th, 2026\" to Devof.net. Status now OK, next run April 12 6:30 UTC (12 PM IST). - Apr 12 4:31 AM: daily-dotnet-blog healthy. Last run Apr 11 10:15 AM, next in ~2h (6:30 UTC). Status OK. - 11:31 PM: All healthy. daily-dotnet-blog runs daily at 12 PM IST, last ran 13h ago, next in ~7h",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4783284536131082,
+      "maxScore": 0.4783284536131082,
+      "firstRecalledAt": "2026-04-15T06:53:40.294Z",
+      "lastRecalledAt": "2026-04-15T06:53:40.294Z",
+      "queryHashes": [
+        "4fa5962fd692"
+      ],
+      "recallDays": [
+        "2026-04-15"
+      ],
+      "conceptTags": [
+        "daily-dotnet-blog",
+        "devof.net",
+        "dotnet",
+        "blog",
+        "likely",
+        "running",
+        "now",
+        "few"
+      ]
+    },
+    "memory:memory/2026-04-12.md:1:22": {
+      "key": "memory:memory/2026-04-12.md:1:22",
+      "path": "memory/2026-04-12.md",
+      "startLine": 1,
+      "endLine": 22,
+      "source": "memory",
+      "snippet": "# 2026-04-12 ## Notes - 7:01 AM: daily-dotnet-blog timed out again (second consecutive failure). Last run at 6:30 UTC, error \"job execution timed out\". Next run stuck on bad timestamp. - 7:31 AM: No change - job still in error state with bad nextRun. - 9:01 AM: nextRun now correctly shows April 13 6:30 UTC (April 12 12 PM IST). Job still in error state but scheduling is now forward-looking. - 11:12 AM: daily-dotnet-blog SUCCESS! Published \"Daily .NET News Update — April 12th, 2026\" to Devof.net. Status OK, next run April 13 6:30 UTC. - 8:13 PM: daily-dotnet-blog healthy. Status ok, next run April 13 6:30 UTC (10h 17m away). - 7:43 PM: Job healthy. Next run April 13 06:30 UTC (10h 47m away)",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4464276025064812,
+      "maxScore": 0.4464276025064812,
+      "firstRecalledAt": "2026-04-15T06:53:40.294Z",
+      "lastRecalledAt": "2026-04-15T06:53:40.294Z",
+      "queryHashes": [
+        "4fa5962fd692"
+      ],
+      "recallDays": [
+        "2026-04-15"
+      ],
+      "conceptTags": [
+        "daily-dotnet-blog",
+        "forward-looking",
+        "devof.net",
+        "dotnet",
+        "blog",
+        "timed",
+        "out",
+        "second"
+      ]
+    },
+    "memory:memory/2026-04-14.md:1:21": {
+      "key": "memory:memory/2026-04-14.md:1:21",
+      "path": "memory/2026-04-14.md",
+      "startLine": 1,
+      "endLine": 21,
+      "source": "memory",
+      "snippet": "# 2026-04-14 ## Notes - 12:14 AM: daily-dotnet-blog healthy. Next run 6:30 UTC (~6h away) = 12 PM IST. - 6:40 AM: daily-dotnet-blog triggered manually after Avnish's \"Try again\" request. Job succeeded - blog post published. Next run tomorrow 12 PM IST (6:30 UTC). - 6:14 AM: Job should be running now (6:30 UTC scheduled). Last run was 7:39 UTC April 13. - 6:43 AM: daily-dotnet-blog SUCCESS! Published \"Daily .NET News Update — April 14th, 2026\" to Devof.net. Status OK, next run April 15 6:30 UTC. - 10:45 AM: Job healthy. Status ok, next run tomorrow 6:30 UTC (~20h away). - 10:15 AM: Job healthy. Next run tomorrow 6:30 UTC (~20h away). - 9:45 AM: Job healthy. Next run tomorrow 6:30 UTC (~21h",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 1.2249240604047793,
+      "maxScore": 0.6250262430545184,
+      "firstRecalledAt": "2026-04-18T06:59:21.468Z",
+      "lastRecalledAt": "2026-04-20T06:30:46.949Z",
+      "queryHashes": [
+        "f7e91be2e07f",
+        "63a08a6e900f"
+      ],
+      "recallDays": [
+        "2026-04-18",
+        "2026-04-20"
+      ],
+      "conceptTags": [
+        "daily-dotnet-blog",
+        "devof.net",
+        "dotnet",
+        "blog",
+        "healthy",
+        "run",
+        "utc",
+        "away"
+      ]
+    }
+  }
+}

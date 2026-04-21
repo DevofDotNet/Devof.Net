@@ -23,6 +23,11 @@ public class BrevoEmailService : IEmailService
         _emailOptions = emailOptions.Value;
         _logger = logger;
 
+        if (string.IsNullOrWhiteSpace(_emailOptions.ApiKey))
+        {
+            throw new ArgumentException("Brevo API key is required.", nameof(emailOptions.Value.ApiKey));
+        }
+
         // Configure Brevo API client
         Configuration.Default.ApiKey.Clear();
         Configuration.Default.ApiKey.Add("api-key", _emailOptions.ApiKey);
