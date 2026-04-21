@@ -1,8 +1,10 @@
 using Blog.Application.Services;
 using Blog.Domain.Entities;
+using Blog.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Blog.Web.Pages;
@@ -12,15 +14,18 @@ public class NewsletterModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailService _emailService;
     private readonly ILogger<NewsletterModel> _logger;
+    private readonly ApplicationDbContext _context;
 
     public NewsletterModel(
         UserManager<ApplicationUser> userManager,
         IEmailService emailService,
-        ILogger<NewsletterModel> logger)
+        ILogger<NewsletterModel> logger,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _emailService = emailService;
         _logger = logger;
+        _context = context;
     }
 
     [BindProperty]
@@ -79,30 +84,57 @@ public class NewsletterModel : PageModel
     private async Task<IActionResult> HandleSubscribeAsync()
     {
         // GDPR: Require double opt-in - send confirmation email instead of immediate subscription
-        var user = IsAuthenticated ? await _userManager.GetUserAsync(User) : null;
+        var email = Input.Email.Trim().ToLowerInvariant();
 
-        // Generate confirmation token
+        // Find or create subscriber record so the confirmation link works
+        var subscriber = await _context.Subscribers
+            .FirstOrDefaultAsync(s => s.Email == email);
+
+        var isNew = subscriber == null;
         var confirmationToken = Guid.NewGuid().ToString("N");
-        var confirmationLink = Url.Page("/NewsletterConfirm", null, new { token = confirmationToken, email = Input.Email }, Request.Scheme);
 
-        // Store pending subscription in temp data or use a pending subscriptions table
-        // For simplicity, we'll send a confirmation email
+        if (subscriber == null)
+        {
+            subscriber = new Subscriber
+            {
+                Email = email,
+                ConfirmationToken = confirmationToken,
+                IsActive = false,
+                IsConfirmed = false,
+                SubscribedAt = DateTime.UtcNow
+            };
+            _context.Subscribers.Add(subscriber);
+        }
+        else
+        {
+            subscriber.ConfirmationToken = confirmationToken;
+            subscriber.IsActive = false;
+            subscriber.IsConfirmed = false;
+            subscriber.UnsubscribedAt = null;
+            subscriber.SubscribedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Generate confirmation link pointing to the NewsletterConfirm page
+        var confirmationLink = Url.Page("/NewsletterConfirm", null, new { token = confirmationToken, email }, Request.Scheme);
+
         var emailSent = await _emailService.SendNotificationEmailAsync(
-            Input.Email,
+            email,
             "Confirm your newsletter subscription",
-            $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p>");
+            $"<p>Please confirm your newsletter subscription by clicking <a href='{confirmationLink}'>here</a>.</p><p>Or copy this link: {confirmationLink}</p>");
 
         if (emailSent)
         {
             StatusMessage = "Please check your email to confirm your subscription.";
             IsSuccess = true;
-            _logger.LogInformation("Confirmation email sent to {Email} for newsletter", Input.Email);
+            _logger.LogInformation("Newsletter confirmation email sent to {Email} (isNew={IsNew})", email, isNew);
         }
         else
         {
             StatusMessage = "Failed to send confirmation email. Please try again later.";
             IsSuccess = false;
-            _logger.LogWarning("Failed to send confirmation email to {Email}", Input.Email);
+            _logger.LogWarning("Failed to send newsletter confirmation email to {Email}", email);
         }
 
         return Page();
