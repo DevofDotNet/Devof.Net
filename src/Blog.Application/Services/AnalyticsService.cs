@@ -79,7 +79,7 @@ public class AnalyticsService : IAnalyticsService
         var uniqueViews = await _unitOfWork.PostViews.GetUniqueViewCountByPostIdAsync(postId, cancellationToken);
         var likeCount = await _unitOfWork.Likes.GetCountByPostIdAsync(postId, cancellationToken);
 
-        var engagementRate = viewCount > 0 ? (double)(likeCount + post.Comments.Count) / viewCount * 100 : 0;
+        var engagementRate = viewCount > 0 ? (double)(likeCount + (post.Comments?.Count ?? 0)) / viewCount * 100 : 0;
 
         return new PostAnalyticsDto
         {
