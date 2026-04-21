@@ -95,8 +95,11 @@ public class FeedModel : PageModel
                 // Cover image as enclosure
                 if (!string.IsNullOrEmpty(post.CoverImageUrl))
                 {
+                    var coverUrl = post.CoverImageUrl.StartsWith("http") || post.CoverImageUrl.StartsWith("/")
+                        ? post.CoverImageUrl
+                        : $"{siteUrl}{post.CoverImageUrl}";
                     await writer.WriteStartElementAsync(null, "enclosure", null);
-                    await writer.WriteAttributeStringAsync(null, "url", null, post.CoverImageUrl.StartsWith("http") ? post.CoverImageUrl : $"{siteUrl}{post.CoverImageUrl}");
+                    await writer.WriteAttributeStringAsync(null, "url", null, coverUrl);
                     await writer.WriteAttributeStringAsync(null, "type", null, "image/jpeg");
                     await writer.WriteAttributeStringAsync(null, "length", null, "0");
                     await writer.WriteEndElementAsync();
