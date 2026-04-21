@@ -27,6 +27,11 @@ public class PostRepository : IPostRepository
 
     public async Task<Post?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(slug))
+        {
+            return null;
+        }
+
         return await _context.Posts
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
@@ -231,6 +236,11 @@ public class TagRepository : ITagRepository
 
     public async Task<Tag?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(slug))
+        {
+            return null;
+        }
+
         return await _context.Tags.FirstOrDefaultAsync(t => t.Slug == slug, cancellationToken);
     }
 
