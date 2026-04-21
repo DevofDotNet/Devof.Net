@@ -108,7 +108,7 @@ public class CommentDto
     public bool IsEdited { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
-    public UserDto Author { get; set; } = null!;
+    public UserDto? Author { get; set; }
     public int? ParentCommentId { get; set; }
     public List<CommentDto> Replies { get; set; } = new();
 }
