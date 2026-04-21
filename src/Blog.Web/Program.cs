@@ -6,6 +6,7 @@ using Blog.Domain.Interfaces;
 using Blog.Infrastructure.Data;
 using Blog.Infrastructure.Repositories;
 using Blog.Infrastructure.Services;
+using Blog.Infrastructure.Validation;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
@@ -105,6 +106,7 @@ builder.Services.AddScoped<IDataExportService, DataExportService>();
 
 // Email Service
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.AddSingleton<IValidateOptions<EmailOptions>, EmailOptionsValidation>();
 builder.Services.AddScoped<IEmailService, BrevoEmailService>();
 
 // Image Service
