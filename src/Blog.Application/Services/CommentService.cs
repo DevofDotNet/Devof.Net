@@ -58,7 +58,9 @@ public class CommentService : ICommentService
 
         // Fetch with author info
         var created = await _unitOfWork.Comments.GetByIdAsync(comment.Id, cancellationToken);
-        return MapToDto(created!);
+        if (created == null)
+            throw new InvalidOperationException($"Failed to retrieve comment with ID {comment.Id} after creation.");
+        return MapToDto(created);
     }
 
     public async Task<CommentDto> UpdateAsync(int commentId, string content, string authorId, CancellationToken cancellationToken = default)
