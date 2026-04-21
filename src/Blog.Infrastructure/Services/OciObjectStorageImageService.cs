@@ -54,7 +54,8 @@ public class OciObjectStorageImageService : IImageService, IDisposable
 
     public void Dispose()
     {
-        try { File.Delete(_tempKeyFile); } catch { }
+        try { File.Delete(_tempKeyFile); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to delete temp OCI key file {File}", _tempKeyFile); }
     }
 
     private ObjectStorageClient CreateClient()
