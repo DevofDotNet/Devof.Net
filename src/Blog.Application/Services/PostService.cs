@@ -455,6 +455,11 @@ public class PostService : IPostService
             DisplayName = user.DisplayName,
             AvatarUrl = user.AvatarUrl,
             Bio = user.Bio,
+            WebsiteUrl = user.WebsiteUrl,
+            GitHubUrl = user.GitHubUrl,
+            TwitterUrl = user.TwitterUrl,
+            LinkedInUrl = user.LinkedInUrl,
+            Location = user.Location,
             CreatedAt = user.CreatedAt
         };
     }
