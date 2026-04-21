@@ -86,8 +86,8 @@ public class UserProfileUpdateValidator : AbstractValidator<UserProfileUpdateDto
 
         RuleFor(x => x.WebsiteUrl)
             .MaximumLength(200).WithMessage("Website URL must not exceed 200 characters")
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.WebsiteUrl))
-            .WithMessage("Website must be a valid URL");
+            .Must(BeAValidHttpsUrl).When(x => !string.IsNullOrEmpty(x.WebsiteUrl))
+            .WithMessage("Website must be a valid HTTPS URL");
 
         RuleFor(x => x.GitHubUrl)
             .MaximumLength(200).WithMessage("GitHub URL must not exceed 200 characters")
