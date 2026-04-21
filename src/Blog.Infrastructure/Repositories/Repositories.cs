@@ -64,6 +64,11 @@ public class PostRepository : IPostRepository
 
     public async Task<IEnumerable<Post>> GetByAuthorIdAsync(string authorId, int page, int pageSize, PostStatus? status = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(authorId))
+        {
+            return Enumerable.Empty<Post>();
+        }
+
         var baseQuery = _context.Posts.Where(p => p.AuthorId == authorId);
 
         if (status.HasValue)
@@ -92,6 +97,11 @@ public class PostRepository : IPostRepository
 
     public async Task<IEnumerable<Post>> GetByTagAsync(string tagSlug, int page, int pageSize, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(tagSlug))
+        {
+            return Enumerable.Empty<Post>();
+        }
+
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug))
             .Include(p => p.Author)
@@ -622,6 +632,11 @@ public class UserRepository : IUserRepository
 
     public async Task<ApplicationUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(username))
+        {
+            return null;
+        }
+
         return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username, cancellationToken);
     }
 
