@@ -63,7 +63,7 @@ public class EditModel : PageModel
             return NotFound();
 
         // Check if user is the author or admin
-        if (post.Author.Id != userId && !User.IsInRole("Admin"))
+        if (post.Author?.Id != userId && !User.IsInRole("Admin"))
             return Forbid();
 
         PostId = post.Id;
@@ -98,7 +98,7 @@ public class EditModel : PageModel
             if (existingPost == null)
                 return NotFound();
 
-            if (existingPost.Author.Id != userId && !User.IsInRole("Admin"))
+            if (existingPost.Author?.Id != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
             string? coverImageUrl = Input.CoverImageUrl;
@@ -160,7 +160,7 @@ public class EditModel : PageModel
             if (existingPost == null)
                 return NotFound();
 
-            if (existingPost.Author.Id != userId && !User.IsInRole("Admin"))
+            if (existingPost.Author?.Id != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
             await _postService.DeleteAsync(PostId, userId);

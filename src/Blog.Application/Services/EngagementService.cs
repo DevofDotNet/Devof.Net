@@ -142,13 +142,13 @@ public class EngagementService : IEngagementService
             CommentCount = post.Comments?.Count ?? 0,
             BookmarkCount = post.Bookmarks?.Count ?? 0,
             IsBookmarked = true, // Since we're getting bookmarked posts
-            Author = new UserDto
+            Author = post.Author != null ? new UserDto
             {
                 Id = post.Author.Id,
                 UserName = post.Author.UserName ?? string.Empty,
                 DisplayName = post.Author.DisplayName,
                 AvatarUrl = post.Author.AvatarUrl
-            },
+            } : new UserDto(),
             Tags = post.PostTags?.Select(pt => new TagDto
             {
                 Id = pt.Tag.Id,

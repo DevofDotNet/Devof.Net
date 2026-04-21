@@ -59,7 +59,7 @@ public class SitemapModel : PageModel
             }
 
             // Author profiles (get distinct authors)
-            var authors = posts.Select(p => p.Author).DistinctBy(a => a.Id);
+            var authors = posts.Where(p => p.Author != null).Select(p => p.Author).DistinctBy(a => a!.Id);
             foreach (var author in authors)
             {
                 await WriteUrlAsync(writer, $"{siteUrl}/Author/{author.UserName}", DateTime.UtcNow, "weekly", "0.6");
