@@ -80,10 +80,9 @@ public static class SeedData
         var foundAdmin = await userManager.FindByEmailAsync(admin.Email);
         if (foundAdmin != null)
         {
-            // Ensure password is correct
+            // Ensure password is correct (user already added above)
             var token = await userManager.GeneratePasswordResetTokenAsync(foundAdmin);
             await userManager.ResetPasswordAsync(foundAdmin, token, adminPassword);
-            users.Add(foundAdmin);
         }
 
 
