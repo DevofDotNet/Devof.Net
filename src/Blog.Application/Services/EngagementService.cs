@@ -27,6 +27,10 @@ public class EngagementService : IEngagementService
 
     public async Task<bool> LikePostAsync(int postId, string userId, CancellationToken cancellationToken = default)
     {
+        var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
+        if (post == null)
+            throw new InvalidOperationException($"Post with ID {postId} not found");
+
         if (await _unitOfWork.Likes.ExistsAsync(userId, postId, cancellationToken))
             return false;
 
@@ -53,6 +57,10 @@ public class EngagementService : IEngagementService
 
     public async Task<bool> BookmarkPostAsync(int postId, string userId, CancellationToken cancellationToken = default)
     {
+        var post = await _unitOfWork.Posts.GetByIdAsync(postId, cancellationToken);
+        if (post == null)
+            throw new InvalidOperationException($"Post with ID {postId} not found");
+
         if (await _unitOfWork.Bookmarks.ExistsAsync(userId, postId, cancellationToken))
             return false;
 
