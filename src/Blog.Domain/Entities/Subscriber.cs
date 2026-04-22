@@ -5,7 +5,9 @@ namespace Blog.Domain.Entities;
 
 public class Subscriber : BaseEntity
 {
+    [Required]
     [MaxLength(254)]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
     public bool IsConfirmed { get; set; } = false;
     public string? ConfirmationToken { get; set; }
