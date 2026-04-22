@@ -118,6 +118,21 @@ public class LocalImageService : IImageService
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
+                
+                // Clean up empty parent directories after deleting file
+                var dirPath = Path.GetDirectoryName(filePath);
+                while (dirPath != null && dirPath.Length > _uploadPath.Length && Directory.Exists(dirPath))
+                {
+                    if (!Directory.EnumerateFileSystemEntries(dirPath).Any())
+                    {
+                        Directory.Delete(dirPath);
+                        dirPath = Path.GetDirectoryName(dirPath);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
         }
         catch (ArgumentException)
