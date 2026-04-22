@@ -87,18 +87,25 @@ public class LocalImageService : IImageService
 
         try
         {
-            // Handle both absolute URLs and relative paths (e.g., "/uploads/filename.jpg")
+            // Parse the URL to get the full relative path including subdirectory
+            // Handle both absolute URLs and relative paths (e.g., "/uploads/avatars/filename.jpg")
             string fileName;
+            
             if (imageUrl.StartsWith("/"))
             {
-                // Relative path like "/uploads/filename.jpg" - combine with a base URI
-                var uri = new Uri(new Uri("http://localhost"), imageUrl);
-                fileName = Path.GetFileName(uri.LocalPath);
+                // Relative path like "/uploads/avatars/filename.jpg" - keep subdirectory prefix
+                var relativePath = imageUrl.TrimStart('/'); // "uploads/avatars/filename.jpg"
+                fileName = relativePath.StartsWith("uploads/")
+                    ? relativePath.Substring("uploads/".Length)  // "avatars/filename.jpg" or "filename.jpg"
+                    : Path.GetFileName(relativePath);
             }
             else if (Uri.TryCreate(imageUrl, UriKind.Absolute, out var absoluteUri))
             {
-                // Absolute URL
-                fileName = Path.GetFileName(absoluteUri.LocalPath);
+                // Absolute URL: extract path after /uploads/
+                var relativePath = absoluteUri.AbsolutePath; // e.g., "/uploads/avatars/guid.jpg"
+                fileName = relativePath.StartsWith("/uploads/") 
+                    ? relativePath.Substring("/uploads/".Length)  // "avatars/guid.jpg"
+                    : Path.GetFileName(absoluteUri.LocalPath);
             }
             else
             {
