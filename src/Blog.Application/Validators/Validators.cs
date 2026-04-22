@@ -53,9 +53,26 @@ public class UpdatePostValidator : AbstractValidator<UpdatePostDto>
             .NotEmpty().WithMessage("Content is required")
             .MinimumLength(50).WithMessage("Content must be at least 50 characters");
 
+        RuleFor(x => x.CoverImageUrl)
+            .MaximumLength(500).WithMessage("Cover image URL must not exceed 500 characters")
+            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.CoverImageUrl))
+            .WithMessage("Cover image must be a valid URL");
+
+        RuleFor(x => x.MetaTitle)
+            .MaximumLength(200).WithMessage("Meta title must not exceed 200 characters");
+
+        RuleFor(x => x.MetaDescription)
+            .MaximumLength(500).WithMessage("Meta description must not exceed 500 characters");
+
         RuleFor(x => x.Tags)
             .Must(tags => tags == null || tags.Count <= 5)
             .WithMessage("Maximum 5 tags allowed");
+    }
+
+    private static bool BeAValidUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }
 
