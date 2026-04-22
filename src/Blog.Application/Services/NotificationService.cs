@@ -76,8 +76,9 @@ public class NotificationService : INotificationService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private static string TruncateContent(string content, int maxLength)
+    private static string TruncateContent(string? content, int maxLength)
     {
+        if (string.IsNullOrEmpty(content)) return string.Empty;
         if (content.Length <= maxLength) return content;
         return content.Substring(0, maxLength) + "...";
     }
