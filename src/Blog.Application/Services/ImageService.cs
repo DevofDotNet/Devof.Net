@@ -87,7 +87,25 @@ public class LocalImageService : IImageService
 
         try
         {
-            var fileName = Path.GetFileName(new Uri(imageUrl).LocalPath);
+            // Handle both absolute URLs and relative paths (e.g., "/uploads/filename.jpg")
+            string fileName;
+            if (imageUrl.StartsWith("/"))
+            {
+                // Relative path like "/uploads/filename.jpg" - combine with a base URI
+                var uri = new Uri(new Uri("http://localhost"), imageUrl);
+                fileName = Path.GetFileName(uri.LocalPath);
+            }
+            else if (Uri.TryCreate(imageUrl, UriKind.Absolute, out var absoluteUri))
+            {
+                // Absolute URL
+                fileName = Path.GetFileName(absoluteUri.LocalPath);
+            }
+            else
+            {
+                // Plain filename or invalid - use as-is
+                fileName = Path.GetFileName(imageUrl);
+            }
+
             var filePath = Path.Combine(_uploadPath, fileName);
 
             if (File.Exists(filePath))
