@@ -370,14 +370,19 @@ public class PostService : IPostService
         slug = Regex.Replace(slug, @"\s+", "-");
         slug = Regex.Replace(slug, @"-+", "-");
         slug = slug.Trim('-');
-        
+
         // Fallback for empty slugs (e.g., titles with only special characters)
         if (string.IsNullOrEmpty(slug))
         {
             slug = $"post-{DateTime.UtcNow:yyyyMMddHHmmss}";
         }
-        
-        return slug.Length > 200 ? slug.Substring(0, 200) : slug;
+
+        // Trim after truncation to handle edge case where truncation cuts after a dash
+        if (slug.Length > 200)
+        {
+            slug = slug.Substring(0, 200).Trim('-');
+        }
+        return slug;
     }
 
     private async Task<PostDto> MapToDtoAsync(Post post, string? currentUserId, CancellationToken cancellationToken)
