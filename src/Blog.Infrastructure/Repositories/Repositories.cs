@@ -92,6 +92,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(authorId))
+        {
+            return 0;
+        }
+
         var query = _context.Posts.Where(p => p.AuthorId == authorId);
         if (status.HasValue)
         {
@@ -120,6 +125,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetCountByTagAsync(string tagSlug, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(tagSlug))
+        {
+            return 0;
+        }
+
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug))
             .CountAsync(cancellationToken);
@@ -151,6 +161,11 @@ public class PostRepository : IPostRepository
 
     public async Task<IEnumerable<Post>> SearchAsync(string query, int page, int pageSize, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(query))
+        {
+            return Enumerable.Empty<Post>();
+        }
+
         var searchQuery = $"%{query}%";
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published &&
@@ -167,6 +182,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetSearchCountAsync(string query, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(query))
+        {
+            return 0;
+        }
+
         var searchQuery = $"%{query}%";
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published &&
@@ -208,6 +228,11 @@ public class PostRepository : IPostRepository
 
     public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(slug))
+        {
+            return false;
+        }
+
         return await _context.Posts
             .AnyAsync(p => p.Slug == slug && (!excludeId.HasValue || p.Id != excludeId.Value), cancellationToken);
     }
