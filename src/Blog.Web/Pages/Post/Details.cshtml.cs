@@ -61,7 +61,7 @@ public class DetailsModel : PageModel
     {
         if (Post?.Author == null) return false;
         var userId = User.GetUserId();
-        return !string.IsNullOrEmpty(userId) && Post.Author.Id == userId;
+        return !string.IsNullOrEmpty(userId) && Post.Author?.Id == userId;
     }
 
     public async Task<IActionResult> OnGetAsync(string slug, int page = 1)
