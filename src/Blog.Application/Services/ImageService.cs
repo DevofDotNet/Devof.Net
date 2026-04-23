@@ -113,7 +113,25 @@ public class LocalImageService : IImageService
                 fileName = Path.GetFileName(imageUrl);
             }
 
-            var filePath = Path.Combine(_uploadPath, fileName);
+            // Security validation: prevent path traversal attacks
+            if (string.IsNullOrEmpty(fileName) || 
+                fileName.Contains("..") || 
+                fileName.Contains("/") || 
+                fileName.Contains("\\"))
+            {
+                // Invalid filename, reject the request
+                return Task.CompletedTask;
+            }
+
+            // Ensure the file is within the upload directory
+            var filePath = Path.GetFullPath(Path.Combine(_uploadPath, fileName));
+            var uploadPath = Path.GetFullPath(_uploadPath);
+            
+            if (!filePath.StartsWith(uploadPath, StringComparison.OrdinalIgnoreCase))
+            {
+                // Path traversal attempt detected
+                return Task.CompletedTask;
+            }
 
             if (File.Exists(filePath))
             {
@@ -123,6 +141,14 @@ public class LocalImageService : IImageService
         catch (ArgumentException)
         {
             // Invalid URL, ignore
+        }
+        catch (PathTooLongException)
+        {
+            // Path too long, ignore
+        }
+        catch (NotSupportedException)
+        {
+            // Invalid path characters, ignore
         }
 
         return Task.CompletedTask;
