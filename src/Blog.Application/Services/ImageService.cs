@@ -87,8 +87,25 @@ public class LocalImageService : IImageService
 
         try
         {
-            var fileName = Path.GetFileName(new Uri(imageUrl).LocalPath);
+            var uri = new Uri(imageUrl);
+            var fileName = Path.GetFileName(uri.LocalPath);
+            
+            // Additional security check: ensure fileName is not empty and doesn't contain path traversal sequences
+            if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+            {
+                return Task.CompletedTask;
+            }
+            
             var filePath = Path.Combine(_uploadPath, fileName);
+
+            // Additional security check: ensure the resolved path is within the upload directory
+            var fullPath = Path.GetFullPath(filePath);
+            var fullUploadPath = Path.GetFullPath(_uploadPath);
+            
+            if (!fullPath.StartsWith(fullUploadPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.CompletedTask;
+            }
 
             if (File.Exists(filePath))
             {
@@ -98,6 +115,14 @@ public class LocalImageService : IImageService
         catch (ArgumentException)
         {
             // Invalid URL, ignore
+        }
+        catch (PathTooLongException)
+        {
+            // Path too long, ignore
+        }
+        catch (NotSupportedException)
+        {
+            // URI format not supported, ignore
         }
 
         return Task.CompletedTask;
