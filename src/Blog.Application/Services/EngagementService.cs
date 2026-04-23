@@ -89,10 +89,19 @@ public class EngagementService : IEngagementService
     {
         var bookmarks = await _unitOfWork.Bookmarks.GetByUserIdAsync(userId, page, pageSize, cancellationToken);
         var totalCount = await _unitOfWork.Bookmarks.GetCountByUserIdAsync(userId, cancellationToken);
-        
+
+        var items = new List<PostDto>();
+        foreach (var bookmark in bookmarks)
+        {
+            if (bookmark.Post != null)
+            {
+                items.Add(await MapPostToDtoAsync(bookmark.Post, userId, cancellationToken));
+            }
+        }
+
         return new PagedResult<PostDto>
         {
-            Items = bookmarks.Select(b => MapPostToDto(b.Post, userId)).ToList(),
+            Items = items,
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount
@@ -133,8 +142,10 @@ public class EngagementService : IEngagementService
         return await _unitOfWork.Follows.IsFollowingAsync(followerId, followingId, cancellationToken);
     }
 
-    private static PostDto MapPostToDto(Post post, string userId)
+    private async Task<PostDto> MapPostToDtoAsync(Post post, string userId, CancellationToken cancellationToken)
     {
+        var isLiked = await _unitOfWork.Likes.ExistsAsync(userId, post.Id, cancellationToken);
+
         return new PostDto
         {
             Id = post.Id,
@@ -150,7 +161,8 @@ public class EngagementService : IEngagementService
             LikeCount = post.Likes?.Count ?? 0,
             CommentCount = post.Comments?.Count ?? 0,
             BookmarkCount = post.Bookmarks?.Count ?? 0,
-            IsBookmarked = true, // Since we're getting bookmarked posts
+            IsLiked = isLiked,
+            IsBookmarked = true,
             Author = post.Author != null ? new UserDto
             {
                 Id = post.Author.Id,
