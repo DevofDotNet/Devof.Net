@@ -271,7 +271,11 @@ public class PostService : IPostService
         await _unitOfWork.Posts.UpdateAsync(post, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return await MapToDetailDtoAsync(post, authorId, cancellationToken);
+        // Reload post with navigation properties to avoid null reference in Tag mapping
+        var savedPost = await _unitOfWork.Posts.GetByIdAsync(post.Id, cancellationToken);
+        if (savedPost == null)
+            throw new InvalidOperationException($"Failed to retrieve post with ID {post.Id} after update.");
+        return await MapToDetailDtoAsync(savedPost, authorId, cancellationToken);
     }
 
     public async Task PublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)

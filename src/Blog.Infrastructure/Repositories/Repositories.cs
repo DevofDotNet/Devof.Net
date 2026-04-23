@@ -17,6 +17,11 @@ public class PostRepository : IPostRepository
 
     public async Task<Post?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Posts
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
@@ -241,6 +246,11 @@ public class TagRepository : ITagRepository
 
     public async Task<Tag?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Tags.FindAsync(new object[] { id }, cancellationToken);
     }
 
@@ -334,6 +344,11 @@ public class CommentRepository : ICommentRepository
 
     public async Task<Comment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Comments
             .Include(c => c.Author)
             .Include(c => c.Replies).ThenInclude(r => r.Author)
@@ -571,6 +586,11 @@ public class ReportRepository : IReportRepository
 
     public async Task<Report?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Reports
             .Include(r => r.Reporter)
             .Include(r => r.ReportedUser)
@@ -627,6 +647,11 @@ public class UserRepository : IUserRepository
 
     public async Task<ApplicationUser?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(id))
+        {
+            return null;
+        }
+
         return await _context.Users.FindAsync(new object[] { id }, cancellationToken);
     }
 
@@ -737,6 +762,11 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<Notification?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Notifications
             .Include(n => n.User)
             .Include(n => n.RelatedPost)
