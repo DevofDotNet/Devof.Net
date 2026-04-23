@@ -40,13 +40,35 @@ public class PostService : IPostService
     public async Task<PostDetailDto?> GetByIdAsync(int id, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(id, cancellationToken);
-        return post == null ? null : await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
+        if (post == null)
+            return null;
+
+        // Enforce access control: only published posts are public.
+        // Authors can access their own posts (any status). Admins implicitly have access through role, but this method
+        // does not check roles; authorized access to non-published posts should always be via authenticated user
+        // who is the author. Admins should use author override or separate admin endpoint.
+        if (post.Status != PostStatus.Published && post.AuthorId != currentUserId)
+        {
+            return null;
+        }
+
+        return await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
     }
 
     public async Task<PostDetailDto?> GetBySlugAsync(string slug, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetBySlugAsync(slug, cancellationToken);
-        return post == null ? null : await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
+        if (post == null)
+            return null;
+
+        // Access control: only published posts are publicly accessible.
+        // If the post is not published, only the author (currentUserId matches) may view it.
+        if (post.Status != PostStatus.Published && post.AuthorId != currentUserId)
+        {
+            return null;
+        }
+
+        return await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
     }
 
     public async Task<PagedResult<PostDto>> GetLatestAsync(int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
