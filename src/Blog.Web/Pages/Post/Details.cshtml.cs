@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Blog.Web.Pages.Post;
 
@@ -52,6 +53,7 @@ public class DetailsModel : PageModel
     public PostDetailDto? Post { get; set; }
     public PagedResult<CommentDto> Comments { get; set; } = new();
     public List<PostDto> RelatedPosts { get; set; } = new();
+    public string JsonLd { get; private set; } = string.Empty;
     
     // Authorization properties - calculated after Post is loaded
     public bool CanEdit => Post != null && User.Identity?.IsAuthenticated == true && IsCurrentUserAuthor();
@@ -88,7 +90,50 @@ public class DetailsModel : PageModel
         Comments = await _commentService.GetByPostIdAsync(Post.Id, page);
         RelatedPosts = await _postService.GetRelatedAsync(Post.Id, 3, userId);
 
+        // Build JSON-LD with proper JSON escaping to prevent XSS
+        JsonLd = BuildJsonLd();
+
         return Page();
+    }
+
+    private string BuildJsonLd()
+    {
+        if (Post == null) return string.Empty;
+
+        var jsonLd = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Article",
+            ["headline"] = Post.Title,
+            ["description"] = Post.MetaDescription ?? Post.Excerpt,
+            ["image"] = string.IsNullOrEmpty(Post.CoverImageUrl) ? "https://devof.net/images/og-default.png" : Post.CoverImageUrl,
+            ["author"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "Person",
+                ["name"] = Post.Author.DisplayName ?? Post.Author.UserName,
+                ["url"] = $"https://devof.net/Author/{Post.Author.UserName}"
+            },
+            ["publisher"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "Organization",
+                ["name"] = "Devof.NET",
+                ["logo"] = new Dictionary<string, object?>
+                {
+                    ["@type"] = "ImageObject",
+                    ["url"] = "https://devof.net/images/logo.png"
+                }
+            },
+            ["datePublished"] = Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+            ["dateModified"] = Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+            ["mainEntityOfPage"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "WebPage",
+                ["@id"] = $"https://devof.net/post/{Post.Slug}"
+            },
+            ["keywords"] = string.Join(", ", Post.Tags.Select(t => t.Name))
+        };
+
+        return JsonSerializer.Serialize(jsonLd);
     }
 
     public async Task<IActionResult> OnPostLikeAsync(string slug)

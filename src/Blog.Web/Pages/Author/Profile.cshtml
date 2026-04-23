@@ -12,30 +12,9 @@
 
 @if (Model.Profile != null)
 {
-        <!-- Person Schema for Author Rich Snippets -->
-        <script type="application/ld+json">
-        {
-            "@@context": "https://schema.org",
-            "@@type": "Person",
-            "name": "@JavaScriptEncoder.Default.Encode(Model.Profile.DisplayName)",
-            "url": "@JavaScriptEncoder.Default.Encode($"https://devof.net/Author/{Model.Profile.UserName}")",
-            "image": "@JavaScriptEncoder.Default.Encode(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png")",
-            "description": "@JavaScriptEncoder.Default.Encode(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET")",
-            "sameAs": [
-        @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
-        {
-            <text>"@JavaScriptEncoder.Default.Encode(Model.Profile.GitHubUrl)"</text>
-        }
-        @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
-        {
-            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) ? "," : "")"@JavaScriptEncoder.Default.Encode(Model.Profile.TwitterUrl)"</text>
-        }
-        @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
-        {
-            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) || !string.IsNullOrEmpty(Model.Profile.TwitterUrl) ? "," : "")"@JavaScriptEncoder.Default.Encode(Model.Profile.LinkedInUrl)"</text>
-        }
-        ]
-    }
+    <!-- Person Schema for Author Rich Snippets -->
+    <script type="application/ld+json">
+        @Html.Raw(Model.JsonLd)
     </script>
 }
 

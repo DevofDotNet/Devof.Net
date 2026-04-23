@@ -21,34 +21,8 @@
 {
     <!-- Article Schema for Rich Snippets -->
     <script type="application/ld+json">
-                            {
-                                "@@context": "https://schema.org",
-                                "@@type": "Article",
-                                "headline": "@JavaScriptEncoder.Default.Encode(Model.Post.Title)",
-                                "description": "@JavaScriptEncoder.Default.Encode(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
-                                "image": "@JavaScriptEncoder.Default.Encode(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
-                                "author": {
-                                    "@@type": "Person",
-                                    "name": "@JavaScriptEncoder.Default.Encode(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
-                                    "url": "@JavaScriptEncoder.Default.Encode($"https://devof.net/Author/{Model.Post.Author.UserName}")"
-                                },
-                                "publisher": {
-                                    "@@type": "Organization",
-                                    "name": "Devof.NET",
-                                    "logo": {
-                                        "@@type": "ImageObject",
-                                        "url": "https://devof.net/images/logo.png"
-                                    }
-                                },
-                                "datePublished": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
-                                "dateModified": "@Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ")",
-                                "mainEntityOfPage": {
-                                    "@@type": "WebPage",
-                                    "@@id": "@JavaScriptEncoder.Default.Encode($"https://devof.net/post/{Model.Post.Slug}")"
-                                },
-                                "keywords": "@JavaScriptEncoder.Default.Encode(string.Join(", ", Model.Post.Tags.Select(t => t.Name)))"
-                            }
-                            </script>
+        @Html.Raw(Model.JsonLd)
+    </script>
 }
 
 @if (Model.Post == null)
