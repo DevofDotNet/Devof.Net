@@ -1,6 +1,11 @@
 @page "/post/{slug}"
 @model Blog.Web.Pages.Post.DetailsModel
+<<<<<<< HEAD
 @using System.Text.Json
+=======
+@using System.Text.Encodings.Web
+
+>>>>>>> origin/main
 @{
     ViewData["Title"] = Model.Post?.Title ?? "Post Not Found";
     ViewData["MetaDescription"] = Model.Post?.MetaDescription ?? Model.Post?.Excerpt;
@@ -23,6 +28,7 @@
                             {
                                 "@@context": "https://schema.org",
                                 "@@type": "Article",
+<<<<<<< HEAD
                                 "headline": @Html.Raw(JsonSerializer.Serialize(Model.Post.Title)),
                                 "description": @Html.Raw(JsonSerializer.Serialize(Model.Post.MetaDescription ?? Model.Post.Excerpt)),
                                 "image": @Html.Raw(JsonSerializer.Serialize(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")),
@@ -30,6 +36,15 @@
                                     "@@type": "Person",
                                     "name": @Html.Raw(JsonSerializer.Serialize(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)),
                                     "url": @Html.Raw(JsonSerializer.Serialize("https://devof.net/Author/" + Model.Post.Author.UserName)),
+=======
+                                "headline": "@JavaScriptEncoder.Default.Encode(Model.Post.Title)",
+                                "description": "@JavaScriptEncoder.Default.Encode(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
+                                "image": "@JavaScriptEncoder.Default.Encode(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
+                                "author": {
+                                    "@@type": "Person",
+                                    "name": "@JavaScriptEncoder.Default.Encode(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
+                                    "url": "@JavaScriptEncoder.Default.Encode($"https://devof.net/Author/{Model.Post.Author.UserName}")"
+>>>>>>> origin/main
                                 },
                                 "publisher": {
                                     "@@type": "Organization",
@@ -43,9 +58,15 @@
                                 "dateModified": @Html.Raw(JsonSerializer.Serialize(Model.Post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"))),
                                 "mainEntityOfPage": {
                                     "@@type": "WebPage",
+<<<<<<< HEAD
                                     "@@id": @Html.Raw(JsonSerializer.Serialize("https://devof.net/post/" + Model.Post.Slug)),
                                 },
                                 "keywords": @Html.Raw(JsonSerializer.Serialize(string.Join(", ", Model.Post.Tags.Select(t => t.Name))))
+=======
+                                    "@@id": "@JavaScriptEncoder.Default.Encode($"https://devof.net/post/{Model.Post.Slug}")"
+                                },
+                                "keywords": "@JavaScriptEncoder.Default.Encode(string.Join(", ", Model.Post.Tags.Select(t => t.Name)))"
+>>>>>>> origin/main
                             }
                             </script>
 }
@@ -243,12 +264,15 @@ else
                 <div class="comment-item card" id="comment-@comment.Id">
                     <div class="card-body">
                         <div class="comment-header">
-                            <a href="/Author/@comment.Author.UserName" class="comment-author">
-                                <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
-                                    class="comment-avatar" />
-                                <span class="comment-author-name">@(comment.Author.DisplayName ??
-                            comment.Author.UserName)</span>
-                            </a>
+                            @if (comment.Author != null)
+                            {
+                                <a href="/Author/@comment.Author.UserName" class="comment-author">
+                                    <img src="@(comment.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                        class="comment-avatar" />
+                                    <span class="comment-author-name">@(comment.Author.DisplayName ??
+                                comment.Author.UserName)</span>
+                                </a>
+                            }
                             <span class="comment-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
                             @if (comment.IsEdited)
                             {
@@ -274,12 +298,15 @@ else
                                 {
                                     <div class="comment-item reply" id="comment-@reply.Id">
                                         <div class="comment-header">
-                                            <a href="/Author/@reply.Author.UserName" class="comment-author">
-                                                <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
-                                                    class="comment-avatar" />
-                                                <span class="comment-author-name">@(reply.Author.DisplayName ??
-                                    reply.Author.UserName)</span>
-                                            </a>
+                                            @if (reply.Author != null)
+                                            {
+                                                <a href="/Author/@reply.Author.UserName" class="comment-author">
+                                                    <img src="@(reply.Author.AvatarUrl ?? "/images/default-avatar.png")" alt=""
+                                                        class="comment-avatar" />
+                                                    <span class="comment-author-name">@(reply.Author.DisplayName ??
+                                                reply.Author.UserName)</span>
+                                                </a>
+                                            }
                                             <span class="comment-date">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
                                         <div class="comment-content">@if (reply.RenderedContent != null) { @Html.Raw(reply.RenderedContent) } else { @reply.Content }</div>

@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Blog.Application.Services;
 
@@ -14,6 +15,7 @@ public class LocalImageService : IImageService
 {
     private readonly string _uploadPath;
     private readonly string _baseUrl;
+    private readonly ILogger<LocalImageService> _logger;
 
     // Whitelist of allowed image extensions
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -30,10 +32,11 @@ public class LocalImageService : IImageService
     // Maximum file size: 10MB
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
 
-    public LocalImageService(string uploadPath, string baseUrl)
+    public LocalImageService(string uploadPath, string baseUrl, ILogger<LocalImageService> logger)
     {
         _uploadPath = uploadPath;
         _baseUrl = baseUrl;
+        _logger = logger;
 
         if (!Directory.Exists(_uploadPath))
         {
@@ -87,6 +90,7 @@ public class LocalImageService : IImageService
 
         try
         {
+<<<<<<< HEAD
             var uri = new Uri(imageUrl);
             var fileName = Path.GetFileName(uri.LocalPath);
             
@@ -97,6 +101,53 @@ public class LocalImageService : IImageService
             }
             
             var filePath = Path.Combine(_uploadPath, fileName);
+=======
+            // Parse the URL to get the full relative path including subdirectory
+            // Handle both absolute URLs and relative paths (e.g., "/uploads/avatars/filename.jpg")
+            string fileName;
+            
+            if (imageUrl.StartsWith("/"))
+            {
+                // Relative path like "/uploads/avatars/filename.jpg" - keep subdirectory prefix
+                var relativePath = imageUrl.TrimStart('/'); // "uploads/avatars/filename.jpg"
+                fileName = relativePath.StartsWith("uploads/")
+                    ? relativePath.Substring("uploads/".Length)  // "avatars/filename.jpg" or "filename.jpg"
+                    : Path.GetFileName(relativePath);
+            }
+            else if (Uri.TryCreate(imageUrl, UriKind.Absolute, out var absoluteUri))
+            {
+                // Absolute URL: extract path after /uploads/
+                var relativePath = absoluteUri.AbsolutePath; // e.g., "/uploads/avatars/guid.jpg"
+                fileName = relativePath.StartsWith("/uploads/") 
+                    ? relativePath.Substring("/uploads/".Length)  // "avatars/guid.jpg"
+                    : Path.GetFileName(absoluteUri.LocalPath);
+            }
+            else
+            {
+                // Plain filename or invalid - use as-is
+                fileName = Path.GetFileName(imageUrl);
+            }
+
+            // Security validation: prevent path traversal attacks
+            if (string.IsNullOrEmpty(fileName) || 
+                fileName.Contains("..") || 
+                fileName.Contains("/") || 
+                fileName.Contains("\\"))
+            {
+                // Invalid filename, reject the request
+                return Task.CompletedTask;
+            }
+
+            // Ensure the file is within the upload directory
+            var filePath = Path.GetFullPath(Path.Combine(_uploadPath, fileName));
+            var uploadPath = Path.GetFullPath(_uploadPath);
+            
+            if (!filePath.StartsWith(uploadPath, StringComparison.OrdinalIgnoreCase))
+            {
+                // Path traversal attempt detected
+                return Task.CompletedTask;
+            }
+>>>>>>> origin/main
 
             // Additional security check: ensure the resolved path is within the upload directory
             var fullPath = Path.GetFullPath(filePath);
@@ -112,17 +163,17 @@ public class LocalImageService : IImageService
                 File.Delete(filePath);
             }
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            // Invalid URL, ignore
+            _logger.LogWarning(ex, "Invalid URL format in DeleteAsync: {ImageUrl}", imageUrl);
         }
-        catch (PathTooLongException)
+        catch (PathTooLongException ex)
         {
-            // Path too long, ignore
+            _logger.LogWarning(ex, "Path too long in DeleteAsync: {ImageUrl}", imageUrl);
         }
-        catch (NotSupportedException)
+        catch (NotSupportedException ex)
         {
-            // URI format not supported, ignore
+            _logger.LogWarning(ex, "Invalid path characters in DeleteAsync: {ImageUrl}", imageUrl);
         }
 
         return Task.CompletedTask;

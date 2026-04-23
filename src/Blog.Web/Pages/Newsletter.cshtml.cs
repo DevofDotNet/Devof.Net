@@ -116,8 +116,13 @@ public class NewsletterModel : PageModel
 
         await _context.SaveChangesAsync();
 
+<<<<<<< HEAD
         // Generate confirmation link pointing to the NewsletterConfirm page
         var confirmationLink = Url.Page("/NewsletterConfirm", null, new { token = confirmationToken, email }, Request.Scheme);
+=======
+        // Use API endpoint for confirmation link (NewsletterConfirm page doesn't exist)
+        var confirmationLink = $"{Request.Scheme}://{Request.Host}/api/newsletter/confirm?token={confirmationToken}&email={email}";
+>>>>>>> origin/main
 
         var emailSent = await _emailService.SendNotificationEmailAsync(
             email,

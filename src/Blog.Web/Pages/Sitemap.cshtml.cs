@@ -58,8 +58,11 @@ public class SitemapModel : PageModel
                 await WriteUrlAsync(writer, $"{siteUrl}/Tag/{tag.Slug}", DateTime.UtcNow, "weekly", "0.7");
             }
 
-            // Author profiles (get distinct authors)
-            var authors = posts.Select(p => p.Author).DistinctBy(a => a.Id);
+            // Author profiles (get distinct authors, filter null authors to avoid NRE)
+            var authors = posts
+                .Where(p => p.Author != null)
+                .Select(p => p.Author!)
+                .DistinctBy(a => a.Id);
             foreach (var author in authors)
             {
                 await WriteUrlAsync(writer, $"{siteUrl}/Author/{author.UserName}", DateTime.UtcNow, "weekly", "0.6");

@@ -74,7 +74,7 @@ public class EditModel : PageModel
         
         if (string.IsNullOrEmpty(actualSlug) && actualId.HasValue)
         {
-            var postById = await _postService.GetByIdAsync(actualId.Value, null);
+            var postById = await _postService.GetByIdAsync(actualId.Value, userId);
             if (postById == null)
             {
                 _logger.LogWarning("Post not found by id: {Id}", actualId);
@@ -90,7 +90,7 @@ public class EditModel : PageModel
         }
 
         // Load post WITHOUT userId to get clean author data
-        var post = await _postService.GetBySlugAsync(actualSlug!, null);
+        var post = await _postService.GetBySlugAsync(actualSlug!, userId);
 
         if (post == null)
         {
@@ -151,7 +151,7 @@ public class EditModel : PageModel
 
         try
         {
-            var existingPost = await _postService.GetByIdAsync(PostId, null);
+            var existingPost = await _postService.GetByIdAsync(PostId, userId);
             if (existingPost == null)
             {
                 _logger.LogWarning("Post not found: {PostId}", PostId);
@@ -224,7 +224,7 @@ public class EditModel : PageModel
 
         try
         {
-            var existingPost = await _postService.GetByIdAsync(PostId, null);
+            var existingPost = await _postService.GetByIdAsync(PostId, userId);
             if (existingPost == null)
                 return NotFound();
 

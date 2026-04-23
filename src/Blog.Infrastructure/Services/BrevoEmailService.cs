@@ -1,3 +1,6 @@
+using System.Net;
+using System.Web;
+
 using Blog.Application.Services;
 using Blog.Domain.Common;
 
@@ -39,6 +42,8 @@ public class BrevoEmailService : IEmailService
         try
         {
             var subject = "Confirm your email address";
+            var safeUserName = WebUtility.HtmlEncode(userName);
+            var safeSenderName = WebUtility.HtmlEncode(_emailOptions.SenderName);
             var htmlContent = $@"
 <!DOCTYPE html>
 <html>
@@ -55,10 +60,10 @@ public class BrevoEmailService : IEmailService
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>Welcome to {_emailOptions.SenderName}!</h1>
+            <h1>Welcome to {safeSenderName}!</h1>
         </div>
         <div class='content'>
-            <h2>Hi {userName},</h2>
+            <h2>Hi {safeUserName},</h2>
             <p>Thank you for registering an account with us. To complete your registration, please confirm your email address by clicking the button below:</p>
             <p style='text-align: center;'>
                 <a href='{confirmationLink}' class='button'>Confirm Email Address</a>
@@ -69,7 +74,7 @@ public class BrevoEmailService : IEmailService
             <p>If you didn't create an account, you can safely ignore this email.</p>
         </div>
         <div class='footer'>
-            <p>&copy; {DateTime.UtcNow.Year} {_emailOptions.SenderName}. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} {safeSenderName}. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -89,6 +94,8 @@ public class BrevoEmailService : IEmailService
         try
         {
             var subject = "Reset your password";
+            var safeUserName = WebUtility.HtmlEncode(userName);
+            var safeSenderName = WebUtility.HtmlEncode(_emailOptions.SenderName);
             var htmlContent = $@"
 <!DOCTYPE html>
 <html>
@@ -109,7 +116,7 @@ public class BrevoEmailService : IEmailService
             <h1>Password Reset Request</h1>
         </div>
         <div class='content'>
-            <h2>Hi {userName},</h2>
+            <h2>Hi {safeUserName},</h2>
             <p>We received a request to reset your password. Click the button below to create a new password:</p>
             <p style='text-align: center;'>
                 <a href='{resetLink}' class='button'>Reset Password</a>
@@ -121,7 +128,7 @@ public class BrevoEmailService : IEmailService
             </div>
         </div>
         <div class='footer'>
-            <p>&copy; {DateTime.UtcNow.Year} {_emailOptions.SenderName}. All rights reserved.</p>
+            <p>&copy; {DateTime.UtcNow.Year} {safeSenderName}. All rights reserved.</p>
         </div>
     </div>
 </body>

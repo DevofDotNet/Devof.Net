@@ -40,13 +40,35 @@ public class PostService : IPostService
     public async Task<PostDetailDto?> GetByIdAsync(int id, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetByIdAsync(id, cancellationToken);
-        return post == null ? null : await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
+        if (post == null)
+            return null;
+
+        // Enforce access control: only published posts are public.
+        // Authors can access their own posts (any status). Admins implicitly have access through role, but this method
+        // does not check roles; authorized access to non-published posts should always be via authenticated user
+        // who is the author. Admins should use author override or separate admin endpoint.
+        if (post.Status != PostStatus.Published && post.AuthorId != currentUserId)
+        {
+            return null;
+        }
+
+        return await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
     }
 
     public async Task<PostDetailDto?> GetBySlugAsync(string slug, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         var post = await _unitOfWork.Posts.GetBySlugAsync(slug, cancellationToken);
-        return post == null ? null : await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
+        if (post == null)
+            return null;
+
+        // Access control: only published posts are publicly accessible.
+        // If the post is not published, only the author (currentUserId matches) may view it.
+        if (post.Status != PostStatus.Published && post.AuthorId != currentUserId)
+        {
+            return null;
+        }
+
+        return await MapToDetailDtoAsync(post, currentUserId, cancellationToken);
     }
 
     public async Task<PagedResult<PostDto>> GetLatestAsync(int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
@@ -271,7 +293,11 @@ public class PostService : IPostService
         await _unitOfWork.Posts.UpdateAsync(post, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return await MapToDetailDtoAsync(post, authorId, cancellationToken);
+        // Reload post with navigation properties to avoid null reference in Tag mapping
+        var savedPost = await _unitOfWork.Posts.GetByIdAsync(post.Id, cancellationToken);
+        if (savedPost == null)
+            throw new InvalidOperationException($"Failed to retrieve post with ID {post.Id} after update.");
+        return await MapToDetailDtoAsync(savedPost, authorId, cancellationToken);
     }
 
     public async Task PublishAsync(int postId, string authorId, bool isAdmin = false, CancellationToken cancellationToken = default)
@@ -370,14 +396,19 @@ public class PostService : IPostService
         slug = Regex.Replace(slug, @"\s+", "-");
         slug = Regex.Replace(slug, @"-+", "-");
         slug = slug.Trim('-');
-        
+
         // Fallback for empty slugs (e.g., titles with only special characters)
         if (string.IsNullOrEmpty(slug))
         {
             slug = $"post-{DateTime.UtcNow:yyyyMMddHHmmss}";
         }
-        
-        return slug.Length > 200 ? slug.Substring(0, 200) : slug;
+
+        // Trim after truncation to handle edge case where truncation cuts after a dash
+        if (slug.Length > 200)
+        {
+            slug = slug.Substring(0, 200).Trim('-');
+        }
+        return slug;
     }
 
     private async Task<PostDto> MapToDtoAsync(Post post, string? currentUserId, CancellationToken cancellationToken)

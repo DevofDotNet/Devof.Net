@@ -17,6 +17,11 @@ public class PostRepository : IPostRepository
 
     public async Task<Post?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Posts
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
@@ -87,6 +92,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetCountByAuthorIdAsync(string authorId, PostStatus? status = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(authorId))
+        {
+            return 0;
+        }
+
         var query = _context.Posts.Where(p => p.AuthorId == authorId);
         if (status.HasValue)
         {
@@ -115,6 +125,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetCountByTagAsync(string tagSlug, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(tagSlug))
+        {
+            return 0;
+        }
+
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug))
             .CountAsync(cancellationToken);
@@ -146,6 +161,11 @@ public class PostRepository : IPostRepository
 
     public async Task<IEnumerable<Post>> SearchAsync(string query, int page, int pageSize, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(query))
+        {
+            return Enumerable.Empty<Post>();
+        }
+
         var searchQuery = $"%{query}%";
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published &&
@@ -162,6 +182,11 @@ public class PostRepository : IPostRepository
 
     public async Task<int> GetSearchCountAsync(string query, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(query))
+        {
+            return 0;
+        }
+
         var searchQuery = $"%{query}%";
         return await _context.Posts
             .Where(p => p.Status == PostStatus.Published &&
@@ -203,6 +228,11 @@ public class PostRepository : IPostRepository
 
     public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(slug))
+        {
+            return false;
+        }
+
         return await _context.Posts
             .AnyAsync(p => p.Slug == slug && (!excludeId.HasValue || p.Id != excludeId.Value), cancellationToken);
     }
@@ -241,6 +271,11 @@ public class TagRepository : ITagRepository
 
     public async Task<Tag?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Tags.FindAsync(new object[] { id }, cancellationToken);
     }
 
@@ -334,6 +369,11 @@ public class CommentRepository : ICommentRepository
 
     public async Task<Comment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Comments
             .Include(c => c.Author)
             .Include(c => c.Replies).ThenInclude(r => r.Author)
@@ -571,6 +611,11 @@ public class ReportRepository : IReportRepository
 
     public async Task<Report?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Reports
             .Include(r => r.Reporter)
             .Include(r => r.ReportedUser)
@@ -627,6 +672,11 @@ public class UserRepository : IUserRepository
 
     public async Task<ApplicationUser?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(id))
+        {
+            return null;
+        }
+
         return await _context.Users.FindAsync(new object[] { id }, cancellationToken);
     }
 
@@ -737,6 +787,11 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<Notification?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0)
+        {
+            return null;
+        }
+
         return await _context.Notifications
             .Include(n => n.User)
             .Include(n => n.RelatedPost)

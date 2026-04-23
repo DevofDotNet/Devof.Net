@@ -1,6 +1,11 @@
 @page "/Author/{username}"
 @model Blog.Web.Pages.Author.ProfileModel
+<<<<<<< HEAD
 @using System.Text.Json
+=======
+@using System.Text.Encodings.Web
+
+>>>>>>> origin/main
 @{
     ViewData["Title"] = Model.Profile?.DisplayName ?? "Author Not Found";
     ViewData["MetaDescription"] = Model.Profile != null
@@ -16,11 +21,32 @@
         {
             "@@context": "https://schema.org",
             "@@type": "Person",
+<<<<<<< HEAD
             "name": @Html.Raw(JsonSerializer.Serialize(Model.Profile.DisplayName)),
             "url": @Html.Raw(JsonSerializer.Serialize("https://devof.net/Author/" + Model.Profile.UserName)),
             "image": @Html.Raw(JsonSerializer.Serialize(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png")),
             "description": @Html.Raw(JsonSerializer.Serialize(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET")),
             "sameAs": @Html.Raw(JsonSerializer.Serialize(new[] { Model.Profile.GitHubUrl, Model.Profile.TwitterUrl, Model.Profile.LinkedInUrl }.Where(u => !string.IsNullOrEmpty(u))))
+=======
+            "name": "@JavaScriptEncoder.Default.Encode(Model.Profile.DisplayName)",
+            "url": "@JavaScriptEncoder.Default.Encode($"https://devof.net/Author/{Model.Profile.UserName}")",
+            "image": "@JavaScriptEncoder.Default.Encode(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png")",
+            "description": "@JavaScriptEncoder.Default.Encode(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET")",
+            "sameAs": [
+        @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
+        {
+            <text>"@JavaScriptEncoder.Default.Encode(Model.Profile.GitHubUrl)"</text>
+        }
+        @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
+        {
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) ? "," : "")"@JavaScriptEncoder.Default.Encode(Model.Profile.TwitterUrl)"</text>
+        }
+        @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
+        {
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) || !string.IsNullOrEmpty(Model.Profile.TwitterUrl) ? "," : "")"@JavaScriptEncoder.Default.Encode(Model.Profile.LinkedInUrl)"</text>
+        }
+        ]
+>>>>>>> origin/main
     }
     </script>
 }

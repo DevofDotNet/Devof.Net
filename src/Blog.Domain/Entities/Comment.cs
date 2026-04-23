@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using Blog.Domain.Common;
 
 namespace Blog.Domain.Entities;
 
 public class Comment : BaseEntity
 {
+    [Required]
+    [StringLength(2000)]
     public string Content { get; set; } = string.Empty;
     public string? RenderedContent { get; set; } // HTML rendered if markdown support
     public bool IsEdited { get; set; } = false;
