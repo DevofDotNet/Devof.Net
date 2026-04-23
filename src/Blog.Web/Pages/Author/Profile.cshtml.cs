@@ -4,6 +4,8 @@ using Blog.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace Blog.Web.Pages.Author;
 
@@ -25,6 +27,7 @@ public class ProfileModel : PageModel
 
     public AuthorProfileDto? Profile { get; set; }
     public PagedResult<PostDto> Posts { get; set; } = new();
+    public string JsonLd { get; private set; } = string.Empty;
 
     public async Task<IActionResult> OnGetAsync(string username, int page = 1)
     {
@@ -57,6 +60,23 @@ public class ProfileModel : PageModel
 
         Posts = await _postService.GetByAuthorAsync(user.Id, page, 9, Domain.Enums.PostStatus.Published, currentUserId);
         Profile.PostCount = Posts.TotalCount;
+
+        // Build JSON-LD with proper JSON escaping to prevent XSS
+        var jsonLdObj = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Person",
+            ["name"] = Profile.DisplayName,
+            ["url"] = $"https://devof.net/Author/{Profile.UserName}",
+            ["image"] = string.IsNullOrEmpty(Profile.AvatarUrl) ? "https://devof.net/images/default-avatar.png" : Profile.AvatarUrl,
+            ["description"] = string.IsNullOrEmpty(Profile.Bio) ? $"{Profile.DisplayName} is an author on Devof.NET" : Profile.Bio
+        };
+        var sameAs = new List<string?>();
+        if (!string.IsNullOrEmpty(Profile.GitHubUrl)) sameAs.Add(Profile.GitHubUrl);
+        if (!string.IsNullOrEmpty(Profile.TwitterUrl)) sameAs.Add(Profile.TwitterUrl);
+        if (!string.IsNullOrEmpty(Profile.LinkedInUrl)) sameAs.Add(Profile.LinkedInUrl);
+        if (sameAs.Count > 0) jsonLdObj["sameAs"] = sameAs;
+        JsonLd = JsonSerializer.Serialize(jsonLdObj);
 
         return Page();
     }
