@@ -8,29 +8,31 @@
     ViewData["OgImage"] = Model.Profile?.AvatarUrl ?? "https://devof.net/images/og-default.png";
 }
 
+@using System.Text.Json
+
 @if (Model.Profile != null)
 {
-        <!-- Person Schema for Author Rich Snippets -->
-        <script type="application/ld+json">
+    <!-- Person Schema for Author Rich Snippets -->
+    <script type="application/ld+json">
         {
             "@@context": "https://schema.org",
             "@@type": "Person",
-            "name": "@Model.Profile.DisplayName",
+            "name": @JsonSerializer.Serialize(Model.Profile.DisplayName),
             "url": "https://devof.net/Author/@Model.Profile.UserName",
-            "image": "@(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png")",
-            "description": "@(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET")",
+            "image": @JsonSerializer.Serialize(Model.Profile.AvatarUrl ?? "https://devof.net/images/default-avatar.png"),
+            "description": @JsonSerializer.Serialize(Model.Profile.Bio ?? $"{Model.Profile.DisplayName} is an author on Devof.NET"),
             "sameAs": [
         @if (!string.IsNullOrEmpty(Model.Profile.GitHubUrl))
         {
-            <text>"@Model.Profile.GitHubUrl"</text>
+            <text>@JsonSerializer.Serialize(Model.Profile.GitHubUrl)</text>
         }
         @if (!string.IsNullOrEmpty(Model.Profile.TwitterUrl))
         {
-            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) ? "," : "")@Html.Raw($"\"{Model.Profile.TwitterUrl}\"")</text>
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) ? "," : "")@JsonSerializer.Serialize(Model.Profile.TwitterUrl)</text>
         }
         @if (!string.IsNullOrEmpty(Model.Profile.LinkedInUrl))
         {
-            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) || !string.IsNullOrEmpty(Model.Profile.TwitterUrl) ? "," : "")@Html.Raw($"\"{Model.Profile.LinkedInUrl}\"")</text>
+            <text>@(!string.IsNullOrEmpty(Model.Profile.GitHubUrl) || !string.IsNullOrEmpty(Model.Profile.TwitterUrl) ? "," : "")@JsonSerializer.Serialize(Model.Profile.LinkedInUrl)</text>
         }
         ]
     }

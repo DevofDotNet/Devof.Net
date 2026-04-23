@@ -1,19 +1,15 @@
 @page "/post/{slug}"
 @model Blog.Web.Pages.Post.DetailsModel
-@{
-    ViewData["Title"] = Model.Post?.Title ?? "Post Not Found";
-    ViewData["MetaDescription"] = Model.Post?.MetaDescription ?? Model.Post?.Excerpt;
-    ViewData["MetaKeywords"] = Model.Post?.MetaKeywords ?? (Model.Post != null ? string.Join(", ", Model.Post.Tags.Select(t
-    => t.Name)) : "");
-    ViewData["OgImage"] = Model.Post?.CoverImageUrl;
-    ViewData["OgType"] = "article";
-    ViewData["CanonicalUrl"] = $"https://devof.net/post/{Model.Post?.Slug}";
+@{ ViewData["Title"] = Model.Post?.Title ?? "Post Not Found"; ViewData["MetaDescription"] = Model.Post?.MetaDescription ?? Model.Post?.Excerpt; ViewData["MetaKeywords"] = Model.Post?.MetaKeywords ?? (Model.Post != null ? string.Join(", ", Model.Post.Tags.Select(t
+    => t.Name)) : ""); ViewData["OgImage"] = Model.Post?.CoverImageUrl; ViewData["OgType"] = "article"; ViewData["CanonicalUrl"] = $"https://devof.net/post/{Model.Post?.Slug}";
 
     var isAuthor = User.Identity?.IsAuthenticated == true &&
     (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.Post?.Author.Id);
     var isAdmin = User.IsInRole("Admin");
     var canEdit = Model.CanEdit || User.IsInRole("Admin");
 }
+
+@using System.Text.Json
 
 @if (Model.Post != null)
 {
@@ -22,12 +18,12 @@
                             {
                                 "@@context": "https://schema.org",
                                 "@@type": "Article",
-                                "headline": "@Model.Post.Title",
-                                "description": "@(Model.Post.MetaDescription ?? Model.Post.Excerpt)",
-                                "image": "@(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png")",
+                                "headline": @JsonSerializer.Serialize(Model.Post.Title),
+                                "description": @JsonSerializer.Serialize(Model.Post.MetaDescription ?? Model.Post.Excerpt),
+                                "image": @JsonSerializer.Serialize(Model.Post.CoverImageUrl ?? "https://devof.net/images/og-default.png"),
                                 "author": {
                                     "@@type": "Person",
-                                    "name": "@(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName)",
+                                    "name": @JsonSerializer.Serialize(Model.Post.Author.DisplayName ?? Model.Post.Author.UserName),
                                     "url": "https://devof.net/Author/@Model.Post.Author.UserName"
                                 },
                                 "publisher": {
@@ -44,7 +40,7 @@
                                     "@@type": "WebPage",
                                     "@@id": "https://devof.net/post/@Model.Post.Slug"
                                 },
-                                "keywords": "@string.Join(", ", Model.Post.Tags.Select(t => t.Name))"
+                                "keywords": @JsonSerializer.Serialize(string.Join(", ", Model.Post.Tags.Select(t => t.Name)))
                             }
                             </script>
 }
